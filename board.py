@@ -90,3 +90,6 @@ class grid:
 			if(cost>=mincost and cost<=maxcost):
 				neighbors.append(((point[0],point[1]-1),cost))
 		return neighbors
+	
+	def size(self):
+		return (len(self.board),len(self.board[0]))
