@@ -2,6 +2,13 @@ import pygame
 import board
 import math
 
+colors={'blue':(128,128,255),
+    'green':(0,196,0),
+    'red':(200,0,0),
+    'orange':(200,128,0),
+    'yellow':(196,196,0)
+}
+
 pygame.init()
 screen = pygame.display.set_mode((1280,960))
 s=pygame.Surface((1280,960))
@@ -9,14 +16,14 @@ s=pygame.Surface((1280,960))
 basis=([1,0],[-0.5,math.sqrt(3)/4])
 
 testgrid=board.grid()
-extrema=((testgrid.size()[0]*basis[0][0],testgrid.size()[0]*basis[0][1]),(testgrid.size()[1]*basis[1][0],testgrid.size()[1]*basis[1][1]))
+extrema=((testgrid.size()[1]*basis[0][0],testgrid.size()[1]*basis[0][1]),(testgrid.size()[0]*basis[1][0],testgrid.size()[0]*basis[1][1]))
 scaling=(s.get_size()[0]/abs(extrema[0][0]-extrema[1][0]),s.get_size()[1]/abs(extrema[0][1]-extrema[1][1]))
 print(extrema)
 print(scaling)
 testgrid.set((4,5),(5,6),2)
 
 def get_coords(i,j,extrema,scaling):
-    return (int(scaling[0]*(i*basis[0][0]+j*basis[1][0]-extrema[1][0])),int(scaling[1]*(i*basis[0][1]+j*basis[1][1])))
+    return (int(scaling[0]*(j*basis[0][0]+i*basis[1][0]-extrema[1][0])),int(scaling[1]*(j*basis[0][1]+i*basis[1][1])))
     
 print(get_coords(0,19,extrema,scaling))
 running = True
@@ -33,8 +40,11 @@ while running:
             for point in testgrid.get_neighbors((i,j)):
                 #print(point)
                 pygame.draw.line(s,(255,255,255),get_coords(point[0][0],point[0][1],extrema,scaling),get_coords(i,j,extrema,scaling),7*point[1]-6)
-            #pygame.draw.circle(s,(255,255,255),get_coords(i,j,extrema,scaling),int(0.1*min(scaling)))
+    #print(board.cities.keys())
+    for color in board.cities.keys():
+        for city in board.cities[color].values():
+            pygame.draw.circle(s,colors[color],get_coords(city[0],city[1],extrema,scaling),int(0.2*min(scaling)))
     
-    pygame.draw.line(s,(255,255,255),(0,0),(100,100))
+    pygame.draw.line(s,(255,255,255),(50,0),(50,100))
     screen.blit(s,(0,0))
     pygame.display.update()
