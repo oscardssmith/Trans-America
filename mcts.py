@@ -64,6 +64,7 @@ def MCTS(root, state, rollouts):
     generating the highest value child of root is returned.
     Inputs:
         node: the node for which we want to find the optimal move
+        state: the state at the root node
         rollouts: the number of root-leaf traversals to run
     Return:
         The legal move from node.state with the highest value estimate
