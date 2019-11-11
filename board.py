@@ -1,4 +1,15 @@
 import mapFeatures
+import networkx as nx
+
+
+def makeGraph(grid):
+    boardGraph=nx.Graph()
+    for i in range(0,len(grid.board)):
+        for j in range(0,len(grid.board[0])):
+            neighbors=grid.get_neighbors((i,j))
+            for neighbor in neighbors:
+                boardGraph.add_edge((i,j),neighbor[0],weight=neighbor[1])
+    return boardGraph
 
 class grid:
     board=[]
