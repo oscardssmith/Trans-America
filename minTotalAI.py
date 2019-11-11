@@ -1,5 +1,5 @@
 import board
-import TAmap
+import mapFeatures
 import random
 import copy
 

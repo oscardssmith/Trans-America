@@ -1,4 +1,4 @@
-import TAmap
+import mapFeatures
 
 class grid:
     board=[]
@@ -73,6 +73,7 @@ class grid:
             if(cost>=mincost and cost<=maxcost):
                 neighbors.append(((point[0],point[1]-1),cost))
         return neighbors
+        
     def computeCosts(self,point):
         out=[]
         for i in range(0,self.size()[0]):
