@@ -43,7 +43,5 @@ class minTotalAI:
         self.costs=copy.deepcopy(board.costs[self.hub[0]][self.hub[1]])
         print(self.hub)
     
-    #def make_move(self,board):
-     #   board.costs[move[0]][move[1]]
-        
+    
 
