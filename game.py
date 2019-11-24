@@ -24,14 +24,13 @@ class game:
             cities=random.sample(values,len(self.players))
             for i in range(0,len(self.players)):
                 self.hands[players[i][0]][cities[i]]=self.features.cities[key][cities[i]]
-    def check_winner(self,graph):
-        for player in self.players:
-            for coords in self.hands[player[0]].values():
-                print(coords)
-                graph.
-        #print(nx.to_dict_of_dicts(graph))
-        return False
 
-g=game([["Bob",1],["bill",2],["a",3],["c",4],["d",5],["e",6],["f",7]],mapFeatures)
-g.check_winner(g.graph)
-print(g.hands)
+
+g=game([["Bob",1,(0,0)],["bill",2,(0,0)],["a",3,None],["c",4,(0,0)],["d",5,(0,0)],["e",6,(0,0)],["f",7,(0,0)]],mapFeatures)
+print(g.graph.nodes)
+print(g.players[0][2])
+print(board.check_winner(g.graph,g.players,g.hands))
+for player in g.players:
+    print(board.get_moves(g.graph,player))
+#g.check_winner(g.graph)
+#print(g.hands)
