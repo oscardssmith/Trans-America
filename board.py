@@ -11,6 +11,38 @@ def makeGraph(grid):
                 boardGraph.add_edge((i,j),neighbor[0],weight=neighbor[1])
     return boardGraph
 
+def check_winner(graph,players,hands):
+    totals=[]
+    for i in range(0,len(players)):
+        if(players[i][2]==None):
+            totals.append(None)
+            continue
+        else:
+            totals.append(0)
+        for city in hands[players[i][0]].values():
+            totals[i]+=nx.shortest_path_length(graph,players[i][2],city)
+    for i in range(0,len(totals)):
+        if(totals[i]==0):
+            return i,totals
+    #print(nx.to_dict_of_dicts(graph))
+    return False,totals
+
+def get_moves(graph,player):
+    if(player[2]!=None):
+        return graph[player[2]]
+    else:
+        return graph.nodes
+
+def get_turn():
+    return None
+
+def make_move(graph,player,node):
+    if(player[2]==None):
+        player[2]=node
+        return graph,player
+    else:
+        return nx.contracted_nodes(graph, player[2],node,False),player
+
 class grid:
     board=[]
     costs=[]
@@ -103,5 +135,5 @@ class grid:
                     toCheck.append(neighbor[0])
         #print(out)
         return out
-        
+
         
