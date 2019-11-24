@@ -1,52 +1,17 @@
 import mapFeatures
-import networkx as nx
-
-
-def makeGraph(grid):
-    boardGraph=nx.Graph()
-    for i in range(0,len(grid.board)):
-        for j in range(0,len(grid.board[0])):
-            neighbors=grid.get_neighbors((i,j))
-            for neighbor in neighbors:
-                boardGraph.add_edge((i,j),neighbor[0],weight=neighbor[1])
-    return boardGraph
-
-def check_winner(graph,players,hands):
-    totals=[]
-    for i in range(0,len(players)):
-        if(players[i][2]==None):
-            totals.append(None)
-            continue
-        else:
-            totals.append(0)
-        for city in hands[players[i][0]].values():
-            totals[i]+=nx.shortest_path_length(graph,players[i][2],city)
-    for i in range(0,len(totals)):
-        if(totals[i]==0):
-            return i,totals
-    #print(nx.to_dict_of_dicts(graph))
-    return False,totals
-
-def get_moves(graph,player):
-    if(player[2]!=None):
-        return graph[player[2]]
-    else:
-        return graph.nodes
-
-def get_turn():
-    return None
-
-def make_move(graph,player,node):
-    if(player[2]==None):
-        player[2]=node
-        return graph,player
-    else:
-        return nx.contracted_nodes(graph, player[2],node,False),player
+import queue
 
 class grid:
+    turn=0
     board=[]
     costs=[]
-    def __init__(self, mountains, oceans):
+    hubs=[]
+    def __init__(self, mountains, oceans,numPlayers,hubs=[]):
+        if(len(hubs)==0):
+            for i in range(0,numPlayers):
+                self.hubs.append(None)
+        else:
+            self.hubs=hubs
         for i in range(0,13):
             self.board.append([])
             for j in range(0,20):
@@ -88,6 +53,46 @@ class grid:
 
     def size(self):
         return (len(self.board),len(self.board[0]))
+    def get_moves(self,hub):
+        moves=[]
+        if(hub==None):
+            for i in range(0,self.size()[0]):
+                for j in range(0,self.size()[1]):
+                    if(len(self.get_neighbors((i,j)))!=0):
+                        moves.append((i,j))
+            return moves
+        visited=[{},{},{}]
+        visited[0][hub]=None
+        toVisit=[]
+        toVisit.extend(self.get_neighbors(hub,0,0))
+        while(len(toVisit)!=0):
+            check=toVisit.pop(0)
+            if(check[0] not in visited[0]):
+                visited[0][check[0]]=None
+                toVisit.extend(self.get_neighbors(check[0],0,0))
+        for point in visited[0].keys():
+            for neighbor in self.get_neighbors(point,1,1):
+                if(neighbor[0] not in visited[0] and neighbor[0] not in visited[1]):
+                    visited[1][neighbor[0]]=point
+        for point in visited[0].keys():
+            for neighbor in self.get_neighbors(point,2,2):
+                if(neighbor[0] not in visited[0] and neighbor[0] not in visited[1] and neighbor[0] not in visited[2]):
+                    visited[2][neighbor[0]]=point
+        for point in visited[1].keys():
+            for neighbor in self.get_neighbors(point,1,1):
+                if(neighbor[0] not in visited[0] and neighbor[0] not in visited[1] and neighbor[0] not in visited[2]):
+                    visited[2][neighbor[0]]=point
+        moves=[]
+        for point in visited[2].keys():
+            if(visited[2][point] in visited[0]):
+                moves.append([(point,visited[2][point])])
+            else:
+                moves.append([(point,visited[2][point]),(visited[1][visited[2][point]],point)])
+        temp=visited[1].keys()
+        for i in range(1,len(temp)):
+            for j in range(0,i-1):
+                moves.append([(temp[i],visited[1][temp[i]]),(visited[1][temp[j]],temp[j])])
+        return moves
 
     def get_neighbors(self,point, mincost=1,maxcost=2):
         neighbors=[]
@@ -124,16 +129,61 @@ class grid:
             for j in range(0,self.size()[1]):
                 temp.append(2*self.size()[0]*self.size()[1])
             out.append(temp)
-        toCheck=[]
+        toCheck=queue.PriorityQueue()
         out[point[0]][point[1]]=0
-        toCheck.append(point)
-        while(not len(toCheck)==0):
-            test=toCheck.pop(0)
-            for neighbor in self.get_neighbors(test):
+        toCheck.put((0,point))
+        while(not toCheck.empty()):
+            value,test=toCheck.get()
+            #print(value,test)
+            for neighbor in self.get_neighbors(test,0,2):
                 if(out[test[0]][test[1]]+neighbor[1]<out[neighbor[0][0]][neighbor[0][1]]):
+                    #print(out[test[0]][test[1]]+neighbor[1],out[neighbor[0][0]][neighbor[0][1]])
                     out[neighbor[0][0]][neighbor[0][1]]=out[test[0]][test[1]]+neighbor[1]
-                    toCheck.append(neighbor[0])
-        #print(out)
+                    toCheck.put((out[neighbor[0][0]][neighbor[0][1]],neighbor[0]))
+            #print()
         return out
 
-        
+    def make_move(self,playerNum,move):
+        #print(move)
+        if(self.turn!=playerNum):
+            return False
+        if(self.hubs[playerNum]==None):
+            self.hubs[playerNum]=move
+        else:
+            for track in move:
+                print(track)
+                self.set(track[0],track[1],0)
+        self.next_turn()
+        return True
+
+    def unmake_move(self,root,playerNum,move):
+        for track in move:
+            print(track)
+            self.set(track[0],track[1],root.cost(track[0],track[1]))
+            self.turn=self.turn-1
+            self.turn=self.turn%len(self.hubs)
+        return True
+
+    def check_winner(self,players,hands):
+        totals=[]
+        for i in range(0,len(self.hubs)):
+            if(self.hubs[i]==None):
+                totals.append(None)
+                continue
+            totals.append(0)
+            tempcosts=self.computeCosts(self.hubs[i])
+            #print(tempcosts)
+            for city in hands[players[i][0]].values():
+                totals[i]+=tempcosts[city[0]][city[1]]
+        for i in range(0,len(totals)):
+            if(totals[i]==0):
+                return i,totals
+        return False,totals
+
+    def next_turn(self):
+        self.turn+=1
+        self.turn=self.turn%len(self.hubs)
+
+    def get_turn(self):
+        return 2*self.turn-1
+

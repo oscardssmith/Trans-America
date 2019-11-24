@@ -1,9 +1,7 @@
 import pygame
 import board
 import mapFeatures
-import minTotalAI
 import math
-import networkx as nx
 
 colors={'blue':(128,128,255),
     'green':(0,196,0),
@@ -53,9 +51,7 @@ class window:
 
 
 w = window(1280,640,mapFeatures)
-grid=board.grid(mapFeatures.mountains,mapFeatures.oceans)
-p1=minTotalAI.minTotalAI(grid,mapFeatures.cities)
-graph=board.makeGraph(grid)
+grid=board.grid(mapFeatures.mountains,mapFeatures.oceans,2)
 
 #print(nx.to_dict_of_dicts(graph))
 
