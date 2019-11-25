@@ -40,7 +40,8 @@ class window:
         return (int(self.scaling[0]*(j*self.basis[0][0]+i*self.basis[1][0]-self.extrema[1][0])),
                 int(self.scaling[1]*(j*self.basis[0][1]+i*self.basis[1][1])))
                 
-    def draw(self,board):
+    def draw(self,board, hands):
+        # Draw the lines
         for i in range(0,board.size()[0]):
             for j in range(0,board.size()[1]):
                 for point in board.get_neighbors((i,j),0,2):
@@ -51,19 +52,34 @@ class window:
                     if(point[1]==0):
                         color=(255,255,255)
                     self.draw_thicc_line(p1, p2, abs(7*point[1]-6),color)
+                    
+        # Draw cities
         for color in self.cities.keys():
             for city in self.cities[color].values():
                 center = self.get_coords(city[0],city[1])
                 pygame.gfxdraw.aacircle(self.s, center[0], center[1], int(0.25*min(self.scaling)), colors[color])
                 pygame.gfxdraw.filled_circle(self.s, center[0], center[1], int(0.25*min(self.scaling)), colors[color])
-        #pygame.draw.circle(self.s,(255,255,255),get_coords(p1.hub[0],p1.hub[1],extrema,scaling),int(0.25*min(scaling)))
+        
+        
+        # Draw player cities
+        player_colors = ((255,255,255), (0,0,0))
+        for player, hand in hands.items():
+            for city in hand.values():
+                pygame.draw.circle(self.s,player_colors[player],
+                                    self.get_coords(city[0],city[1]),
+                                    int(0.2*min(self.scaling)),
+                                    2)
+        for player, hub in enumerate(board.hubs):
+            if hub is None:
+                continue
+            pygame.draw.circle(self.s,player_colors[player],
+                                self.get_coords(hub[0],hub[1]),
+                                int(0.1*min(self.scaling)))
         #pygame.draw.line(s,(255,255,255),(50,0),(50,100))
         self.screen.blit(self.s,(0,0))
         pygame.display.update()
 
     def draw_thicc_line(self, p0, p1, thickness, color = (255,255,255)):
-        color_L1 = color
-        
         center_x = (p0[0]+p1[0])/2
         center_y = (p0[1]+p1[1])/2
         # The +1 is to get out of the domain error
@@ -83,8 +99,8 @@ class window:
               center_y - hthick *cangle + hlength*sangle)
         BR = (center_x - hlength*cangle + hthick *sangle,
               center_y - hthick *cangle - hlength*sangle)
-        pygame.gfxdraw.aapolygon(self.s, (UL, UR, BR, BL), color_L1)
+        pygame.gfxdraw.aapolygon(self.s, (UL, UR, BR, BL), color)
         if thickness != 8:
-            pygame.gfxdraw.filled_polygon(self.s, (UL, UR, BR, BL), color_L1)
+            pygame.gfxdraw.filled_polygon(self.s, (UL, UR, BR, BL), color)
         
 

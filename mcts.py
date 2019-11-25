@@ -12,8 +12,8 @@ class Node:
         state. parent_node is the Node that is the parent of this
         one in the MCTS tree. """
         self.parent = parent_node
-        self.turn = state.turn
-        self.hub = state.hubs[self.turn]
+        self.turn = deepcopy(state.turn)
+        self.hub = deepcopy(state.hubs[self.turn])
         self.children = {} # maps moves (keys) to Nodes (values); if you use it differently, you must also change addMove
         self.unexpanded = state.get_moves(self.hub) # Stores unvisited moves to speed up search
         self.visits = 0
@@ -38,6 +38,7 @@ class Node:
         n = self.visits
         factor = (root_player==self.turn)*2-1
         self.value = self.value * (n-1)/n + factor*outcome/n
+        #print(outcome, root_player, self.turn, self.value)
         if self.parent is not None:
             self.parent.updateValue(outcome, root_player)
 
@@ -60,10 +61,7 @@ class mctsAI:
         self.me=me
         #self.features=features
         self.hands=hands
-        for i, loc in enumerate(hands[me].values()):
-            if i == 3:
-                break
-        self.hub= loc#initial hub placement because it's OK
+        self.hub= None
         #self.board=board
         self.first_move = True
         
@@ -83,9 +81,15 @@ class mctsAI:
         Return:
             The legal move from node.state with the highest value estimate
         """
+        # Hard code initial hub placement because it's OK
         if self.first_move:
             self.first_move = False
+            for i, loc in enumerate(hands[me].values()):
+                if i >= 2 and loc not in state.hubs:
+                    break
+            self.hub = loc
             return self.hub
+        
         root = Node(state, None)
         me = self.name
         for i in range(rollouts):
@@ -101,7 +105,6 @@ class mctsAI:
             return random_move(root)
         children = root.children
         best_move = max(children, key=lambda move: children[move])
-        print(me)
         return best_move
 
     def representative_leaf(self, node, state):
@@ -121,12 +124,12 @@ class mctsAI:
     
     def rollout(self, state):
         ''' Returns the value of a random rollout from a node from the root player's perspective.'''
-        _, totals = state.check_winner(self.hands)
-        #print(totals)
+        #_, totals = state.check_winner(self.hands)
         totals=[0,0]
         for i in [0,1]:
             for city in self.hands[i].values():
                 totals[i]+=state.distances_left[i][city]
+        print(totals)
         
         ans = (totals[1]-totals[0])/5
         #print(ans)

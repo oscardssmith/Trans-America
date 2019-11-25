@@ -32,6 +32,7 @@ class game:
                 self.hands[players[i][0]][cities[i]]=self.features.cities[key][cities[i]]
         for i in range(0,len(self.players)):
             self.players[i][1]=self.players[i][1].init(copy.deepcopy(self.board),self.features,self.players[i][0],self.hands)
+    
     def take_turn(self):
         move=self.players[self.board.turn][1].move(copy.deepcopy(self.board))
         self.board.make_move(move, self.board.turn)
@@ -74,7 +75,7 @@ while running:
                     print(result[0])
             if event.key == pygame.K_q:
                 running = False
-    w.draw(g.board)
+    w.draw(g.board, g.hands)
 
 #print(g.graph.nodes)
 #print(g.players[0][2])
