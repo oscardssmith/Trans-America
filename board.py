@@ -245,6 +245,9 @@ class grid:
                             break
                     if(worth):
                         self.player_nodes_in_reach[playerNum][reachable[i][1]].add(node)
+                    for k in range(reachable[i][1]+1,3):
+                        if(node in self.player_nodes_in_reach[playerNum][k]):
+                            self.player_nodes_in_reach[playerNum][k].remove(node)
                 for i in range(0,len(self.player_nodes_in_reach)):
                     if(i==playerNum):
                         continue
