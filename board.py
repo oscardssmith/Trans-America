@@ -298,6 +298,7 @@ class grid:
             for city in hands[i].values():
                 totals[i]+=self.distances_left[i][city]
         return totals
+        
     def next_turn(self,tracks):
         if(self.tracks_left-tracks==0):
             self.turn+=1
