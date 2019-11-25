@@ -1,7 +1,10 @@
 import pygame
+import pygame.gfxdraw
 import board
 import mapFeatures
 import math
+from math import cos, sin
+
 
 colors={'blue':(128,128,255),
     'green':(0,196,0),
@@ -10,6 +13,8 @@ colors={'blue':(128,128,255),
     'yellow':(210,210,0)
 }
 
+xres = 1600
+yres = 900
 class window:
     screen = None
     cities = None
@@ -20,7 +25,7 @@ class window:
     def __init__(self,width,height,features,basis = ([1,0],[-0.5,math.sqrt(3)/4])):
         pygame.init()
         self.screen=pygame.display.set_mode((width,height))
-        self.s=pygame.Surface((1280,640))
+        self.s=pygame.Surface((xres,yres))
         self.basis=basis
         self.cities=features.cities
         temp=features.corners
@@ -33,43 +38,54 @@ class window:
         i += 1
         j += 1
         return (int(self.scaling[0]*(j*self.basis[0][0]+i*self.basis[1][0]-self.extrema[1][0])),
-            int(self.scaling[1]*(j*self.basis[0][1]+i*self.basis[1][1])))
+                int(self.scaling[1]*(j*self.basis[0][1]+i*self.basis[1][1])))
+                
     def draw(self,board):
         for i in range(0,board.size()[0]):
             for j in range(0,board.size()[1]):
-                for point in board.get_neighbors((i,j)):
+                for point in board.get_neighbors((i,j),0,2):
                     #print(point)
-                    pygame.draw.line(self.s,(255,255,255),self.get_coords(point[0][0],point[0][1]),self.get_coords(i,j),7*point[1]-6)
+                    p1 = self.get_coords(point[0][0], point[0][1])
+                    p2 = self.get_coords(i,j)
+                    color=(128,128,128)
+                    if(point[1]==0):
+                        color=(255,255,255)
+                    self.draw_thicc_line(p1, p2, abs(7*point[1]-6),color)
         #print(board.cities.keys())
         for color in self.cities.keys():
             for city in self.cities[color].values():
-                pygame.draw.circle(self.s,colors[color],self.get_coords(city[0],city[1]),int(0.25*min(self.scaling)))
+                center = self.get_coords(city[0],city[1])
+                pygame.gfxdraw.aacircle(self.s, center[0], center[1], int(0.25*min(self.scaling)), colors[color])
+                pygame.gfxdraw.filled_circle(self.s, center[0], center[1], int(0.25*min(self.scaling)), colors[color])
         #pygame.draw.circle(self.s,(255,255,255),get_coords(p1.hub[0],p1.hub[1],extrema,scaling),int(0.25*min(scaling)))
         #pygame.draw.line(s,(255,255,255),(50,0),(50,100))
         self.screen.blit(self.s,(0,0))
         pygame.display.update()
 
+    def draw_thicc_line(self, p0, p1, thickness, color = (255,255,255)):
+        color_L1 = color
+        
+        center_x = (p0[0]+p1[0])/2
+        center_y = (p0[1]+p1[1])/2
+        # The +1 is to get out of the domain error
+        angle = math.atan2(p0[1]-p1[1]+1,
+                           p0[0]-p1[0])
+        
+        
+        hlength = math.hypot(p0[0]-p1[0], p0[1]-p1[1])/2. - 2
+        hthick = thickness/2.
+        sangle = math.sin(angle)
+        cangle = math.cos(angle)
+        UL = (center_x + hlength*cangle - hthick *sangle,
+              center_y + hthick *cangle + hlength*sangle)
+        UR = (center_x - hlength*cangle - hthick *sangle,
+              center_y + hthick *cangle - hlength*sangle)
+        BL = (center_x + hlength*cangle + hthick *sangle,
+              center_y - hthick *cangle + hlength*sangle)
+        BR = (center_x - hlength*cangle + hthick *sangle,
+              center_y - hthick *cangle - hlength*sangle)
+        pygame.gfxdraw.aapolygon(self.s, (UL, UR, BR, BL), color_L1)
+        if thickness != 8:
+            pygame.gfxdraw.filled_polygon(self.s, (UL, UR, BR, BL), color_L1)
+        
 
-w = window(1280,640,mapFeatures)
-grid=board.grid(mapFeatures.mountains,mapFeatures.oceans,2)
-
-#print(nx.to_dict_of_dicts(graph))
-
-def get_coords(i,j,extrema,scaling):
-    i += 1
-    j += 1
-    return (int(scaling[0]*(j*basis[0][0]+i*basis[1][0]-extrema[1][0])),
-            int(scaling[1]*(j*basis[0][1]+i*basis[1][1])))
-    
-#print(get_coords(0,19,extrema,scaling))
-running = True
-#print(testgrid.costs)
-    # main loop
-while running:
-    # event handling, gets all event from the event queue
-    for event in pygame.event.get():
-        # only do something if the event is of type QUIT
-        if event.type == pygame.QUIT:
-            # change the value to False, to exit the main loop
-            running = False
-    w.draw(grid)

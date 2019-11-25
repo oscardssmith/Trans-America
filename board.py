@@ -2,11 +2,11 @@ import mapFeatures
 import queue
 
 class grid:
-    turn=0
-    board=[]
-    costs=[]
-    hubs=[]
     def __init__(self, mountains, oceans,numPlayers,hubs=[]):
+        self.turn=0
+        self.board=[]
+        self.costs=[]
+        self.hubs=[]
         if(len(hubs)==0):
             for i in range(0,numPlayers):
                 self.hubs.append(None)
@@ -61,37 +61,35 @@ class grid:
                     if(len(self.get_neighbors((i,j)))!=0):
                         moves.append((i,j))
             return moves
-        visited=[{},{},{}]
-        visited[0][hub]=None
-        toVisit=[]
-        toVisit.extend(self.get_neighbors(hub,0,0))
-        while(len(toVisit)!=0):
-            check=toVisit.pop(0)
-            if(check[0] not in visited[0]):
-                visited[0][check[0]]=None
-                toVisit.extend(self.get_neighbors(check[0],0,0))
-        for point in visited[0].keys():
-            for neighbor in self.get_neighbors(point,1,1):
-                if(neighbor[0] not in visited[0] and neighbor[0] not in visited[1]):
-                    visited[1][neighbor[0]]=point
-        for point in visited[0].keys():
-            for neighbor in self.get_neighbors(point,2,2):
-                if(neighbor[0] not in visited[0] and neighbor[0] not in visited[1] and neighbor[0] not in visited[2]):
-                    visited[2][neighbor[0]]=point
-        for point in visited[1].keys():
-            for neighbor in self.get_neighbors(point,1,1):
-                if(neighbor[0] not in visited[0] and neighbor[0] not in visited[1] and neighbor[0] not in visited[2]):
-                    visited[2][neighbor[0]]=point
-        moves=[]
+        visited=self.LCS(hub,2)
+        for i in visited:
+            print(sorted(list(i.keys())))
+        print(visited)
+        pareddown=[{},{},{}]
         for point in visited[2].keys():
-            if(visited[2][point] in visited[0]):
-                moves.append([(point,visited[2][point])])
+            if(visited[2][point] in visited[0] or visited[2][point] in visited[1]):
+                pareddown[2][point]=visited[2][point]
+        for point in visited[1].keys():
+            if(visited[1][point] in visited[0]):
+                pareddown[1][point]=visited[1][point]
+        for point in visited[0].keys():
+            pareddown[0][point]=visited[0][point]
+        print(pareddown)
+        moves=[]
+        for point in pareddown[2].keys():
+            if(pareddown[2][point] in pareddown[0]):
+                moves.append([(point,pareddown[2][point])])
             else:
-                moves.append([(point,visited[2][point]),(visited[1][visited[2][point]],point)])
-        temp=visited[1].keys()
+                secondMove=pareddown[2][point]
+                while(secondMove not in pareddown[1]):
+                    secondMove=visited[1][secondMove]
+                
+                moves.append([(point,pareddown[2][point]),(pareddown[1][secondMove],secondMove)])
+        temp=list(pareddown[1].keys())
+        #print(visited)
         for i in range(1,len(temp)):
             for j in range(0,i-1):
-                moves.append([(temp[i],visited[1][temp[i]]),(visited[1][temp[j]],temp[j])])
+                moves.append([(temp[i],pareddown[1][temp[i]]),(pareddown[1][temp[j]],temp[j])])
         return moves
 
     def get_neighbors(self,point, mincost=1,maxcost=2):
@@ -122,6 +120,39 @@ class grid:
                 neighbors.append(((point[0],point[1]-1),cost))
         return neighbors
         
+
+    def LCS(self,point,cutoff):
+        visited=[]
+        for i in range(0,cutoff+1):
+            visited.append({})
+        toCheck=queue.PriorityQueue()
+        toCheck.put((0,(point,None)))
+        visited[0][point]=None
+        while(not toCheck.empty()):
+            value,track=toCheck.get()
+            test=track[0]
+            #print(visited)
+            for neighbor in self.get_neighbors(test,0,2):
+                if(neighbor[1]+value<=cutoff):
+                    seen=False
+                    for i in visited:
+                        if(neighbor[0] in i):
+                            seen=True
+                            break
+                    if(not seen):
+                        visited[value+neighbor[1]][neighbor[0]]=test
+                        toCheck.put(((neighbor[1]+value),(neighbor[0],test)))
+            #print(value,test)
+            #for neighbor in self.get_neighbors(test,0,2):
+            #    if(neighbor[1]+value<=cutoff):
+            #        if(out[test[0]][test[1]]+neighbor[1]<out[neighbor[0][0]][neighbor[0][1]]):
+            #            #print(out[test[0]][test[1]]+neighbor[1],out[neighbor[0][0]][neighbor[0][1]])
+            #            out[neighbor[0][0]][neighbor[0][1]]=out[test[0]][test[1]]+neighbor[1]
+            #            toCheck.put((out[neighbor[0][0]][neighbor[0][1]],neighbor[0]))
+            #print()
+        return visited
+
+
     def computeCosts(self,point):
         out=[]
         for i in range(0,self.size()[0]):
@@ -178,7 +209,7 @@ class grid:
         for i in range(0,len(totals)):
             if(totals[i]==0):
                 return i,totals
-        return False,totals
+        return None,totals
 
     def next_turn(self):
         self.turn+=1
