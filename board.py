@@ -1,6 +1,8 @@
 import mapFeatures
 import queue
 
+costs=[]
+
 class Move(tuple):
     def __hash__(self):
         if(len(self)==1):
@@ -17,7 +19,6 @@ class grid:
     def __init__(self, mountains, oceans,numPlayers,hubs=[]):
         self.turn=0
         self.board=[]
-        self.costs=[]
         self.hubs=[]
         self.player_nodes_in_reach=[]
         self.tracks_left=2
@@ -39,9 +40,9 @@ class grid:
             for neighbor in self.get_neighbors(ocean):
                 self.set(ocean,neighbor[0],3)
         for i in range(0,13):
-            self.costs.append([])
+            costs.append([])
             for j in range(0,20):
-                self.costs[i].append(self.computeCosts((i,j)))
+                costs[i].append(self.computeCosts((i,j)))
 
 
     def cost(self,point1,point2):
@@ -193,13 +194,11 @@ class grid:
             return True
         cost=self.cost(move[0],move[1])
         self.next_turn(cost)
-        if(move[0] in self.player_nodes_in_reach[playerNum][cost]):
-            self.player_nodes_in_reach[playerNum][cost].remove(move[0])
-        if(move[1] in self.player_nodes_in_reach[playerNum][cost]):
-            self.player_nodes_in_reach[playerNum][cost].remove(move[1])
         self.set(move[0],move[1],0)
         for track in move:
             if(track not in self.player_nodes_in_reach[playerNum][0]):
+                if(track in self.player_nodes_in_reach[playerNum][cost]):
+                    self.player_nodes_in_reach[playerNum][cost].remove(track)
                 self.player_nodes_in_reach[playerNum][0].add(track)
                 reachable=self.get_neighbors(track)
                 for i in range(0,len(reachable)):
@@ -225,13 +224,13 @@ class grid:
             if(i==playerNum):
                 continue
             for track in move:
-                if(track[0] in self.player_nodes_in_reach[i][0]):
+                if(track in self.player_nodes_in_reach[i][0]):
                     for j in range(0,3):
                         self.player_nodes_in_reach[playerNum][j].update(self.player_nodes_in_reach[i][j])
                         self.player_nodes_in_reach[i][j]=self.player_nodes_in_reach[playerNum][j]
-                        self.player_nodes_in_reach[playerNum][2].difference_update(self.player_nodes_in_reach[playerNum][1])
-                        self.player_nodes_in_reach[playerNum][2].difference_update(self.player_nodes_in_reach[playerNum][0])
-                        self.player_nodes_in_reach[playerNum][1].difference_update(self.player_nodes_in_reach[playerNum][0])
+                    self.player_nodes_in_reach[playerNum][2].difference_update(self.player_nodes_in_reach[playerNum][1])
+                    self.player_nodes_in_reach[playerNum][2].difference_update(self.player_nodes_in_reach[playerNum][0])
+                    self.player_nodes_in_reach[playerNum][1].difference_update(self.player_nodes_in_reach[playerNum][0])
         return True
 
     def unmake_move(self,root_board,move,playerNum):

@@ -1,3 +1,4 @@
+import board as b
 import board
 import random
 import copy
@@ -18,12 +19,12 @@ class minTotalAI:
         self.board=board
         for city in self.hands[self.name].values():
             self.cities.append(city)
-        self.costs=self.board.costs[self.cities[0][0]][self.cities[0][1]]
+        self.costs=b.costs[self.cities[0][0]][self.cities[0][1]]
         
         for city in self.cities[1:]:
             for i in range(0,self.board.size()[0]):
                 for j in range(0,self.board.size()[1]):
-                    self.costs[i][j]+=self.board.costs[city[0]][city[1]][i][j]
+                    self.costs[i][j]+=b.costs[city[0]][city[1]][i][j]
 
         print(self.costs)
     
@@ -41,7 +42,7 @@ class minTotalAI:
                         mincost=self.costs[i][j]
             self.hub=minspot
             for city in self.cities:
-                self.city_costs.append(board.costs[minspot[0]][minspot[1]][city[0]][city[1]])
+                self.city_costs.append(b.costs[minspot[0]][minspot[1]][city[0]][city[1]])
             return minspot
         #print(self.hub)
         possibleMoves=list(board.get_moves(self.hub))
@@ -53,8 +54,8 @@ class minTotalAI:
                 total=self.city_costs[i]
                 for spot in move:
                     #tempcosts=board.computeCosts(spot)
-                    if(board.costs[spot[0]][spot[1]][self.cities[i][0]][self.cities[i][1]]<total):
-                        total=board.costs[spot[0]][spot[1]][self.cities[i][0]][self.cities[i][1]]
+                    if(b.costs[spot[0]][spot[1]][self.cities[i][0]][self.cities[i][1]]<total):
+                        total=b.costs[spot[0]][spot[1]][self.cities[i][0]][self.cities[i][1]]
                 state.append(total)
             values.append(state)
         bestMove=0
