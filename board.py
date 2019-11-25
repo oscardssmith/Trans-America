@@ -1,12 +1,28 @@
 import mapFeatures
 import queue
 
+class Move(tuple):
+    def __hash__(self):
+        if(len(self)==1):
+            return hash(self[0][0])
+        return hash((self[0][0],self[1][0]))
+    def __eq__(self,other):
+        if(len(self)==1):
+            return self[0][0]==other[0][0]
+        return self[0][0]==other[0][0] and self[1][0]==other[1][0]
+    def __new__(self,move):
+        return tuple.__new__(Move,move)
+
 class grid:
     def __init__(self, mountains, oceans,numPlayers,hubs=[]):
         self.turn=0
         self.board=[]
         self.costs=[]
         self.hubs=[]
+        self.player_nodes_in_reach=[]
+        self.tracks_left=2
+        for i in range(0,numPlayers):
+            self.player_nodes_in_reach.append([set(),set(),set()])
         if(len(hubs)==0):
             for i in range(0,numPlayers):
                 self.hubs.append(None)
@@ -50,36 +66,31 @@ class grid:
         return (len(self.board),len(self.board[0]))
         
     def get_moves(self,hub):
-        moves = set()
         if(hub==None):
             for i in range(0,self.size()[0]):
                 for j in range(0,self.size()[1]):
                     if(len(self.get_neighbors((i,j)))!=0):
                         moves.add((i,j))
             return moves
-        visited=self.LCS(hub,2)
-        pareddown=[{},{},{}]
-        for point in visited[2].keys():
-            if(visited[2][point] in visited[0] or visited[2][point] in visited[1]):
-                pareddown[2][point]=visited[2][point]
-        for point in visited[1].keys():
-            if(visited[1][point] in visited[0]):
-                pareddown[1][point]=visited[1][point]
-        for point in visited[0].keys():
-            pareddown[0][point]=visited[0][point]
-        for point in pareddown[2].keys():
-            if(pareddown[2][point] in pareddown[0]):
-                moves.add(((point,pareddown[2][point]), ))
-            else:
-                secondMove=pareddown[2][point]
-                while(secondMove not in pareddown[1]):
-                    secondMove=visited[1][secondMove]
-                
-                moves.add(((point,pareddown[2][point]),(pareddown[1][secondMove],secondMove)))
-        temp=list(pareddown[1].keys())
-        for i in range(1,len(temp)):
-            for j in range(0,i-1):
-                moves.add(((temp[i],pareddown[1][temp[i]]),(pareddown[1][temp[j]],temp[j])))
+
+        player=0
+        for i in range(0,len(self.player_nodes_in_reach)):
+            if(hub in self.player_nodes_in_reach[i][0]):
+                player=i
+                break
+        moves = set()
+        for move in self.player_nodes_in_reach[player][1]:
+            for neighbor in self.get_neighbors(move,1,1):
+                if(neighbor[0] in self.player_nodes_in_reach[player][0]):
+                    moves.add((move,neighbor[0]))
+                    break
+            #moves.add(move)
+        if(self.tracks_left==2):
+            for move in self.player_nodes_in_reach[player][2]:
+                for neighbor in self.get_neighbors(move,2,2):
+                    if(neighbor[0] in self.player_nodes_in_reach[player][0]):
+                        moves.add((move,neighbor[0]))
+                        break
         return moves
 
     def get_neighbors(self,point, mincost=1,maxcost=2):
@@ -111,7 +122,7 @@ class grid:
         return neighbors
         
 
-    def LCS(self,point,cutoff):
+    def LCS(self,point,cutoff,minweight=0):
         visited=[]
         for i in range(0,cutoff+1):
             visited.append({})
@@ -121,7 +132,7 @@ class grid:
         while(not toCheck.empty()):
             value,track=toCheck.get()
             test=track[0]
-            for neighbor in self.get_neighbors(test,0,2):
+            for neighbor in self.get_neighbors(test,minweight,2):
                 if(neighbor[1]+value<=cutoff):
                     seen=False
                     for i in visited:
@@ -174,10 +185,53 @@ class grid:
             return False
         if(self.hubs[playerNum]==None):
             self.hubs[playerNum]=move
-        else:
+            reachable=self.get_neighbors(move)
+            self.player_nodes_in_reach[playerNum][0].add(move)
+            for i in range(0,len(reachable)):
+                self.player_nodes_in_reach[playerNum][reachable[i][1]].add(reachable[i][0])
+            self.next_turn(2)
+            return True
+        cost=self.cost(move[0],move[1])
+        self.next_turn(cost)
+        if(move[0] in self.player_nodes_in_reach[playerNum][cost]):
+            self.player_nodes_in_reach[playerNum][cost].remove(move[0])
+        if(move[1] in self.player_nodes_in_reach[playerNum][cost]):
+            self.player_nodes_in_reach[playerNum][cost].remove(move[1])
+        self.set(move[0],move[1],0)
+        for track in move:
+            if(track not in self.player_nodes_in_reach[playerNum][0]):
+                self.player_nodes_in_reach[playerNum][0].add(track)
+                reachable=self.get_neighbors(track)
+                for i in range(0,len(reachable)):
+                    node=reachable[i][0]
+                    print(node)
+                    worth=True
+                    for j in range(0,reachable[i][1]):
+                        print(j)
+                        if(node in self.player_nodes_in_reach[playerNum][j]):
+                            worth=False
+                            break
+                    print(worth)
+                    if(worth):
+                        self.player_nodes_in_reach[playerNum][reachable[i][1]].add(node)
+                for i in range(0,len(self.player_nodes_in_reach)):
+                    if(i==playerNum):
+                        continue
+                    elif(track in self.player_nodes_in_reach[i][0]):
+                        for j in range(0,3):
+                            self.player_nodes_in_reach[playerNum][j].update(self.player_nodes_in_reach[i][j])
+                            self.player_nodes_in_reach[i][j]=self.player_nodes_in_reach[playerNum][j]
+        for i in range(0,len(self.player_nodes_in_reach)):
+            if(i==playerNum):
+                continue
             for track in move:
-                self.set(track[0],track[1],0)
-        self.next_turn()
+                if(track[0] in self.player_nodes_in_reach[i][0]):
+                    for j in range(0,3):
+                        self.player_nodes_in_reach[playerNum][j].update(self.player_nodes_in_reach[i][j])
+                        self.player_nodes_in_reach[i][j]=self.player_nodes_in_reach[playerNum][j]
+                        self.player_nodes_in_reach[playerNum][2].difference_update(self.player_nodes_in_reach[playerNum][1])
+                        self.player_nodes_in_reach[playerNum][2].difference_update(self.player_nodes_in_reach[playerNum][0])
+                        self.player_nodes_in_reach[playerNum][1].difference_update(self.player_nodes_in_reach[playerNum][0])
         return True
 
     def unmake_move(self,root_board,move,playerNum):
@@ -202,9 +256,13 @@ class grid:
                 return i,totals
         return None,totals
 
-    def next_turn(self):
-        self.turn+=1
-        self.turn=self.turn%len(self.hubs)
+    def next_turn(self,tracks):
+        if(self.tracks_left-tracks==0):
+            self.turn+=1
+            self.turn=self.turn%len(self.hubs)
+            self.tracks_left=2
+        else:
+            self.tracks_left=self.tracks_left-tracks
 
     def get_turn(self):
         return 2*self.turn-1

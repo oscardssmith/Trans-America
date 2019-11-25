@@ -46,7 +46,7 @@ class game:
         return self.board.check_winner(self.players,self.hands)
 
 
-players=[[0,minTotalAI],[1,mcts]]
+players=[[0,minTotalAI],[1,minTotalAI]]
 
 
 g=game(players,mapFeatures)

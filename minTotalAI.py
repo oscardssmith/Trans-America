@@ -47,14 +47,14 @@ class minTotalAI:
         possibleMoves=list(board.get_moves(self.hub))
         values=[]
         for move in possibleMoves:
+            print(move)
             state=[]
             for i in range(0,len(self.cities)):
                 total=self.city_costs[i]
-                for track in move:
-                    for spot in track:
-                        #tempcosts=board.computeCosts(spot)
-                        if(board.costs[spot[0]][spot[1]][self.cities[i][0]][self.cities[i][1]]<total):
-                            total=board.costs[spot[0]][spot[1]][self.cities[i][0]][self.cities[i][1]]
+                for spot in move:
+                    #tempcosts=board.computeCosts(spot)
+                    if(board.costs[spot[0]][spot[1]][self.cities[i][0]][self.cities[i][1]]<total):
+                        total=board.costs[spot[0]][spot[1]][self.cities[i][0]][self.cities[i][1]]
                 state.append(total)
             values.append(state)
         bestMove=0
