@@ -22,7 +22,7 @@ class game:
             self.hands[player[0]]={}
             if(len(player)>2):
                 hubs.append(player[2])
-        self.board=board.grid(mapFeatures.mountains,mapFeatures.oceans,len(players),hubs)
+        self.board=board.grid(mapFeatures,len(players),hubs)
         for key in self.features.cities.keys():
             values=[]
             for i in self.features.cities[key].keys():

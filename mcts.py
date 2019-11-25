@@ -67,7 +67,7 @@ class mctsAI:
         #self.board=board
         self.first_move = True
         
-    def move(self, state, rollouts=800):
+    def move(self, state, rollouts=200):
         """Select a move by Monte Carlo tree search.
         Plays rollouts random games from the root node to a terminal state.
         In each rollout, play proceeds according to UCB while all children have
@@ -89,16 +89,18 @@ class mctsAI:
         root = Node(state, None)
         me = self.name
         for i in range(rollouts):
+            new_state = deepcopy(state)
             if not i%200:
                 print(i)
-            leaf = self.representative_leaf(root, deepcopy(state)) #deepcopy to not overwrite root state
+            leaf = self.representative_leaf(root, new_state) #deepcopy to not overwrite root state
 
-            value = self.rollout(state)
+            value = self.rollout(new_state)
             leaf.updateValue(value, self.me)
         if root.visits < 1:
+            print('Yikes')
             return random_move(root)
         children = root.children
-        best_move = max(children, key=lambda move: children[move].visits)
+        best_move = max(children, key=lambda move: children[move])
         print(me)
         return best_move
 
@@ -108,21 +110,20 @@ class mctsAI:
         while True:
             children = node.children
             for move in node.unexpanded:
-                state.make_move(move, state.turn)
+                state.make_move(move, state.turn, False)
                 node.addMove(state, move)
                 return children[move]
             if state.is_terminal(self.hands):
                 return node
             best_move = max(children, key=lambda move: children[move])
-            state.make_move(best_move, state.turn)
+            state.make_move(best_move, state.turn, False)
             node = children[best_move]
     
     def rollout(self, state):
         ''' Returns the value of a random rollout from a node from the root player's perspective.'''
-        #
         _, totals = state.check_winner(self.hands)
         #print(totals)
-        ans = (totals[0] -totals[1])
+        ans = (totals[1]-totals[0])/5
         #print(ans)
         return ans
         i = 0
@@ -130,5 +131,5 @@ class mctsAI:
             moves = state.get_moves(self.hub)
             #print(len(moves), i, state.value(self.hands))
             i +=1
-            state.make_move(random.sample(moves, 1)[0], state.turn)
+            state.make_move(random.sample(moves, 1)[0], state.turn, False)
         return (state.value(self.hands) == self.me)*2 -1
