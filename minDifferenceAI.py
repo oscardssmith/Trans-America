@@ -3,12 +3,19 @@ import board
 import random
 import copy
 
+temp=0
+
 def init(board,features,me,hands):
-    return minDifferenceAI(board,features,me,hands)
+    min_all=False
+    if(temp==me):
+        #print(me)
+        #min_all=True
+        pass
+    return minDifferenceAI(board,features,me,hands,min_all)
 
 class minDifferenceAI:
     
-    def __init__(self,board,features,me,hands):
+    def __init__(self,board,features,me,hands,min_all=False):
         self.name=me
         self.features=features
         self.hands=hands
@@ -17,6 +24,7 @@ class minDifferenceAI:
         self.city_costs=[]
         self.hub=None
         self.board=board
+        self.min_all=min_all
         for city in self.hands[self.name].values():
             self.cities.append(city)
         self.costs=copy.deepcopy(b.costs[self.cities[0][0]][self.cities[0][1]])
@@ -63,7 +71,10 @@ class minDifferenceAI:
             for player in self.hands.keys():
                 if(player!=self.name):
                     for city in self.hands[player].values():
-                        state=state-tempdistances[player][city]
+                        if(self.min_all):
+                            state=state-min(tempdistances[player][city],tempdistances[self.name][city])
+                        else:
+                            state=state-tempdistances[player][city]
             values.append(state)
         bestMove=0
         for i in range(0,len(possibleMoves)):

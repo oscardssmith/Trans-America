@@ -9,21 +9,22 @@ import graphics
 import pygame
 
 class game:
-    board=None
     features=None
-    players=[]
-    hands={}
 
-    def __init__(self,players,features):
+    def __init__(self,players,features, inboard=None,hands=None):
         self.features=features
-
+        self.hands={}
+        self.board=None
         self.players=players
         hubs=[]
         for player in self.players:
             self.hands[player[0]]={}
             if(len(player)>2):
                 hubs.append(player[2])
-        self.board=board.grid(mapFeatures,len(players),hubs)
+        if(inboard==None):
+            self.board=board.grid(mapFeatures,len(players),hubs)
+        else:
+            self.board=inboard
         for key in self.features.cities.keys():
             values=[]
             for i in self.features.cities[key].keys():
@@ -47,13 +48,25 @@ class game:
             self.take_turn()
         return self.board.check_winner(self.hands)
 
-wins=[0,0]
+wins=[0,0,0]
 while(sum(wins)<100):
-    players=[[0,minDifferenceAI],[1,minTotalAI]]
+    minDifferenceAI.temp=0
+    players=[[0,minDifferenceAI],[1,minDifferenceAI]]
     g=game(players,mapFeatures)
-    winner, score=g.play_game()
-    print(winner)
-    wins[winner]+=1
+
+    gBoard=copy.deepcopy(g.board)
+    hands2=copy.deepcopy(g.hands)
+    winner1, score=g.play_game()
+
+    minDifferenceAI.temp=1
+    g2=game([[0,minDifferenceAI],[1,minDifferenceAI]],mapFeatures,gBoard,hands2)
+    winner2, score=g2.play_game()
+    if(winner1!=winner2):
+        print(winner1)
+        wins[winner1]+=1
+    else:
+        print("draw")
+        wins[2]+=1
 print(wins)
 #print(g.play_game())
 w = graphics.window(graphics.xres,graphics.yres,mapFeatures)
