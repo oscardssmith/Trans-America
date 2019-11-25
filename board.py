@@ -154,6 +154,7 @@ class grid:
         return True
         
     def computeCosts(self,point):
+        ''' Computes costs to everywhere using BFS'''
         out=[]
         for i in range(0,self.size()[0]):
             temp=[]
@@ -275,7 +276,7 @@ class grid:
             self.turn=self.turn%len(self.hubs)
         return True
 
-    def check_winner(self,players,hands):
+    def check_winner(self,hands):
         totals=[]
         for i in range(0,len(self.hubs)):
             if(self.hubs[i]==None):
@@ -283,7 +284,7 @@ class grid:
                 continue
             totals.append(0)
             tempcosts=self.computeCosts(self.hubs[i])
-            for city in hands[players[i][0]].values():
+            for city in hands[i].values():
                 totals[i]+=tempcosts[city[0]][city[1]]
         for i in range(0,len(totals)):
             if(totals[i]==0):
