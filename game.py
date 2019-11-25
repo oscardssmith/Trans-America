@@ -47,14 +47,14 @@ class game:
             self.take_turn()
         return self.board.check_winner(self.hands)
 
-wins=[0,0]
-while(sum(wins)<100):
-    players=[[0,minDifferenceAI],[1,minTotalAI]]
-    g=game(players,mapFeatures)
-    winner, score=g.play_game()
-    print(winner)
-    wins[winner]+=1
-print(wins)
+#wins=[0,0]
+#while(sum(wins)<100):
+players=[[0,mcts],[1,minDifferenceAI]]
+g=game(players,mapFeatures)
+#    winner, score=g.play_game()
+#    print(winner)
+#    wins[winner]+=1
+#print(wins)
 #print(g.play_game())
 w = graphics.window(graphics.xres,graphics.yres,mapFeatures)
 grid=g.board

@@ -40,9 +40,7 @@ class minTotalAI:
                         mincost=self.costs[i][j]
             self.hub=minspot
             return minspot
-        #print(self.hub)
         possibleMoves=list(board.get_moves(self.hub))
-        #print(len(possibleMoves))
         values=[]
         for move in possibleMoves:
             state=[]
@@ -56,8 +54,6 @@ class minTotalAI:
         for i in range(0,len(possibleMoves)):
             if(sum(values[i])<sum(values[bestMove])):
                 bestMove=i
-        #print(values,bestMove)
-        #print(possibleMoves[bestMove])
         return possibleMoves[bestMove]
 
     def eval_move(self,playerNum,move,board,distances_left):

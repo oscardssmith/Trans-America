@@ -57,7 +57,7 @@ class minDifferenceAI:
         for move in possibleMoves:
             state=0
             tempdistances=copy.deepcopy(board.distances_left)
-            tempdistances=self.eval_move(board.turn,move,board,tempdistances)
+            tempdistances=eval_move(board.turn,move,board,tempdistances)
             for i in range(0,len(self.cities)):
                 state+=tempdistances[self.name][self.cities[i]]
             for player in self.hands.keys():
@@ -74,35 +74,35 @@ class minDifferenceAI:
         #print(possibleMoves[bestMove])
         return possibleMoves[bestMove]
 
-    def eval_move(self,playerNum,move,board,distances_left):
-        for track in move:
-            if(track not in board.player_nodes_in_reach[self.name][0]):
-            #Update distances for this track placement
-                for i in range(0,len(board.hubs)):
-                    if(i==playerNum):
-                        continue
-                    hub=board.hubs[i]
-                    if(distances_left[playerNum][hub]>0):
-                        for compare_track in board.player_nodes_in_reach[i][0]:
-                            if(b.costs[track[0]][track[1]][compare_track[0]][compare_track[1]]<distances_left[playerNum][hub]):
-                                distances_left[playerNum][hub]=b.costs[track[0]][track[1]][compare_track[0]][compare_track[1]]
-                            if(b.costs[track[0]][track[1]][compare_track[0]][compare_track[1]]<distances_left[i][board.hubs[playerNum]]):
-                                distances_left[i][board.hubs[playerNum]]=b.costs[track[0]][track[1]][compare_track[0]][compare_track[1]]
+def eval_move(playerNum,move,board,distances_left):
+    for track in move:
+        if(track not in board.player_nodes_in_reach[playerNum][0]):
+        #Update distances for this track placement
+            for i in range(0,len(board.hubs)):
+                if(i==playerNum):
+                    continue
+                hub=board.hubs[i]
+                if(distances_left[playerNum][hub]>0):
+                    for compare_track in board.player_nodes_in_reach[i][0]:
+                        if(b.costs[track[0]][track[1]][compare_track[0]][compare_track[1]]<distances_left[playerNum][hub]):
+                            distances_left[playerNum][hub]=b.costs[track[0]][track[1]][compare_track[0]][compare_track[1]]
+                        if(b.costs[track[0]][track[1]][compare_track[0]][compare_track[1]]<distances_left[i][board.hubs[playerNum]]):
+                            distances_left[i][board.hubs[playerNum]]=b.costs[track[0]][track[1]][compare_track[0]][compare_track[1]]
+            for city in board.cities.values():
+                for location in city.values():
+                    if(b.costs[track[0]][track[1]][location[0]][location[1]]<distances_left[playerNum][location]):
+                        distances_left[playerNum][location]=b.costs[track[0]][track[1]][location[0]][location[1]]
+            for i in range(0,len(board.hubs)):
+                for j in range(0,len(board.hubs)):
+                    if(distances_left[j][board.hubs[playerNum]]+distances_left[playerNum][board.hubs[i]]<distances_left[j][board.hubs[i]]):
+                        distances_left[j][board.hubs[i]]=distances_left[j][board.hubs[playerNum]]+distances_left[playerNum][board.hubs[i]]
+                    if(distances_left[i][board.hubs[playerNum]]+distances_left[playerNum][board.hubs[j]]<distances_left[i][board.hubs[j]]):
+                        distances_left[i][board.hubs[i]]=distances_left[i][board.hubs[playerNum]]+distances_left[playerNum][board.hubs[j]]
                 for city in board.cities.values():
                     for location in city.values():
-                        if(b.costs[track[0]][track[1]][location[0]][location[1]]<distances_left[playerNum][location]):
-                            distances_left[playerNum][location]=b.costs[track[0]][track[1]][location[0]][location[1]]
-                for i in range(0,len(board.hubs)):
-                    for j in range(0,len(board.hubs)):
-                        if(distances_left[j][board.hubs[playerNum]]+distances_left[playerNum][board.hubs[i]]<distances_left[j][board.hubs[i]]):
-                            distances_left[j][board.hubs[i]]=distances_left[j][board.hubs[playerNum]]+distances_left[playerNum][board.hubs[i]]
-                        if(distances_left[i][board.hubs[playerNum]]+distances_left[playerNum][board.hubs[j]]<distances_left[i][board.hubs[j]]):
-                            distances_left[i][board.hubs[i]]=distances_left[i][board.hubs[playerNum]]+distances_left[playerNum][board.hubs[j]]
-                    for city in board.cities.values():
-                        for location in city.values():
-                            if(distances_left[playerNum][location]>distances_left[i][location]+distances_left[playerNum][board.hubs[i]]):
-                                distances_left[playerNum][location]=distances_left[i][location]+distances_left[playerNum][board.hubs[i]]
-                            if(distances_left[i][location]>distances_left[playerNum][location]+distances_left[i][board.hubs[playerNum]]):
-                                distances_left[i][location]=distances_left[playerNum][location]+distances_left[i][board.hubs[playerNum]]
-        return distances_left
+                        if(distances_left[playerNum][location]>distances_left[i][location]+distances_left[playerNum][board.hubs[i]]):
+                            distances_left[playerNum][location]=distances_left[i][location]+distances_left[playerNum][board.hubs[i]]
+                        if(distances_left[i][location]>distances_left[playerNum][location]+distances_left[i][board.hubs[playerNum]]):
+                            distances_left[i][location]=distances_left[playerNum][location]+distances_left[i][board.hubs[playerNum]]
+    return distances_left
 
