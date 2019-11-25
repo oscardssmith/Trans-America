@@ -24,8 +24,6 @@ class minTotalAI:
             for i in range(0,self.board.size()[0]):
                 for j in range(0,self.board.size()[1]):
                     self.costs[i][j]+=self.board.costs[city[0]][city[1]][i][j]
-
-        print(self.costs)
     
     def move(self,board):
         if(self.hub==None):
@@ -47,7 +45,6 @@ class minTotalAI:
         possibleMoves=list(board.get_moves(self.hub))
         values=[]
         for move in possibleMoves:
-            print(move)
             state=[]
             for i in range(0,len(self.cities)):
                 total=self.city_costs[i]

@@ -1,47 +1,45 @@
 from copy import deepcopy
-from math import sqrt, log
+from math import sqrt
 import math
 import random
 
-# Whether to display the UCB rankings at each turn.
-DISPLAY_BOARDS = False
-
-# UCB_CONST value - you should experiment with different values
 UCB_CONST = .75
-COLOR = 0
-me = 1
+
 class Node:
     """Node used in MCTS"""
-    def __init__(self, state, parent_node, hub):
+    def __init__(self, state, parent_node):
         """Constructor for a new node representing game state
         state. parent_node is the Node that is the parent of this
         one in the MCTS tree. """
         self.parent = parent_node
+        self.turn = state.turn
+        self.hub = state.hubs[self.turn]
         self.children = {} # maps moves (keys) to Nodes (values); if you use it differently, you must also change addMove
-        self.unexpanded = state.get_moves(hub) # Stores unvisited moves to speed up search
+        self.unexpanded = state.get_moves(self.hub) # Stores unvisited moves to speed up search
         self.visits = 0
         self.value = 0
 
-    def addMove(self, state, move, hub):
+    def addMove(self, state, move):
         """
         Adds a new node for the child resulting from move if one doesn't already exist.
         Returns true if a new node was added, false otherwise.
         """
         if move in self.unexpanded:
-            self.children[move] = Node(state, self, hub)
+            self.children[move] = Node(state, self)
             self.unexpanded.remove(move)
             return True
         print('Yikes')
         return False
 
-    def updateValue(self, outcome):
+    def updateValue(self, outcome, root_player):
         """Updates the value estimate for the node's state.
-        outcome: +1 for 1st player win, -1 for 2nd player win, 0 for draw."""
+        outcome: +1 for we win, -1 for they win"""
         self.visits += 1
         n = self.visits
-        self.value = self.value * (n-1)/n + (outcome+1)/(2*n)
+        factor = root_player==self.turn
+        self.value = self.value * (n-1)/n + factor*outcome/n
         if self.parent is not None:
-            self.parent.updateValue(-outcome)
+            self.parent.updateValue(outcome, root_player)
 
     def UCBWeight(self):
         """Weight from the UCB formula used by parent to select a child.
@@ -85,18 +83,19 @@ class mctsAI:
         if self.first_move:
             self.first_move = False
             return self.hub
-        root = Node(state, None, self.hub)
+        root = Node(state, None)
         me = self.name
-        COLOR = state.get_turn()
         for i in range(rollouts):
-            print(i)
+            if not i%50:
+                print(i)
             leaf = self.representative_leaf(root, deepcopy(state)) #deepcopy to not overwrite root state
+
             value = self.rollout(state)
-            leaf.updateValue(-leaf.state.get_turn()*value)
+            leaf.updateValue(-state.get_turn()*value, self.me)
         if root.visits < 1:
             return random_move(root)
-            chilren = root.children
-        best_move = max(children, key=lambda move: children[move].vists)
+        children = root.children
+        best_move = max(children, key=lambda move: children[move].visits)
         return best_move
 
     def representative_leaf(self, node, state):
@@ -105,17 +104,21 @@ class mctsAI:
         while True:
             children = node.children
             for move in node.unexpanded:
-                state.make_move(move, self.me)
-                node.addMove(state, move, self.hub)
+                state.make_move(move, state.turn)
+                node.addMove(state, move)
                 return children[move]
             if state.is_terminal(self.hands):
                 return node
             best_move = max(children, key=children.values())
-            state.make_move(best_move, self.me)
+            state.make_move(best_move, state.turn)
             node = children[best_move]
     
     def rollout(self, state):
         ''' Returns the value of a random rollout from a node.'''
+        i = 0
         while not state.is_terminal(self.hands):
-            state.make_move(random.sample(state.get_moves(self.hub), 1)[0], self.me)
-        return state.value()
+            moves = state.get_moves(self.hub)
+            #print(len(moves), i, state.value(self.hands))
+            i +=1
+            state.make_move(random.sample(moves, 1)[0], state.turn)
+        return (state.value(self.hands) == state.turn)*2 -1
