@@ -35,15 +35,15 @@ class game:
     def take_turn(self):
         move=self.players[self.board.turn][1].move(copy.deepcopy(self.board))
         self.board.make_move(move, self.board.turn)
-        return self.board.check_winner(self.players,self.hands)
+        return self.board.check_winner(self.hands)
         
     def make_move(self, move, player):
         return self.board.make_move(move, player)
 
     def play_game(self):
-        while(self.board.check_winner(self.players,self.hands)[0]==None):
+        while(self.board.check_winner(self.hands)[0]==None):
             self.take_turn()
-        return self.board.check_winner(self.players,self.hands)
+        return self.board.check_winner(self.hands)
 
 
 players=[[0,mcts],[1,minTotalAI]]
