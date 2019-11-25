@@ -44,7 +44,7 @@ class minTotalAI:
                 self.city_costs.append(board.costs[minspot[0]][minspot[1]][city[0]][city[1]])
             return minspot
         #print(self.hub)
-        possibleMoves=board.get_moves(self.hub)
+        possibleMoves=list(board.get_moves(self.hub))
         values=[]
         for move in possibleMoves:
             state=[]

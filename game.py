@@ -34,11 +34,11 @@ class game:
             self.players[i][1]=self.players[i][1].init(copy.deepcopy(self.board),self.features,self.players[i][0],self.hands)
     def take_turn(self):
         move=self.players[self.board.turn][1].move(copy.deepcopy(self.board))
-        self.board.make_move(self.board.turn,move)
+        self.board.make_move(move, self.board.turn)
         return self.board.check_winner(self.players,self.hands)
         
-    def make_move(self,player,move):
-        return self.board.make_move(player,move)
+    def make_move(self, move, player):
+        return self.board.make_move(move, player)
 
     def play_game(self):
         while(self.board.check_winner(self.players,self.hands)[0]==None):
@@ -46,7 +46,8 @@ class game:
         return self.board.check_winner(self.players,self.hands)
 
 
-players=[["AI1",minTotalAI],["AI2",minTotalAI]]
+players=[[0,minTotalAI],[1,mcts]]
+
 
 g=game(players,mapFeatures)
 #print(g.play_game())

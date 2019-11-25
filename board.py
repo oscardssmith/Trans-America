@@ -15,17 +15,12 @@ class grid:
         for i in range(0,13):
             self.board.append([])
             for j in range(0,20):
-                #print(i,j)
                 self.board[i].append([[0,1],[1,1]])
 
-        #print(self.board)
         for mountain in mountains:
-            #print(mountain)
             self.set(mountain[0],mountain[1],2)
         for ocean in oceans:
-            #print(ocean)
             for neighbor in self.get_neighbors(ocean):
-                #print(neighbor)
                 self.set(ocean,neighbor[0],3)
         for i in range(0,13):
             self.costs.append([])
@@ -53,18 +48,16 @@ class grid:
 
     def size(self):
         return (len(self.board),len(self.board[0]))
+        
     def get_moves(self,hub):
-        moves=[]
+        moves = set()
         if(hub==None):
             for i in range(0,self.size()[0]):
                 for j in range(0,self.size()[1]):
                     if(len(self.get_neighbors((i,j)))!=0):
-                        moves.append((i,j))
+                        moves.add((i,j))
             return moves
         visited=self.LCS(hub,2)
-        for i in visited:
-            print(sorted(list(i.keys())))
-        print(visited)
         pareddown=[{},{},{}]
         for point in visited[2].keys():
             if(visited[2][point] in visited[0] or visited[2][point] in visited[1]):
@@ -74,22 +67,19 @@ class grid:
                 pareddown[1][point]=visited[1][point]
         for point in visited[0].keys():
             pareddown[0][point]=visited[0][point]
-        print(pareddown)
-        moves=[]
         for point in pareddown[2].keys():
             if(pareddown[2][point] in pareddown[0]):
-                moves.append([(point,pareddown[2][point])])
+                moves.add(((point,pareddown[2][point]), ))
             else:
                 secondMove=pareddown[2][point]
                 while(secondMove not in pareddown[1]):
                     secondMove=visited[1][secondMove]
                 
-                moves.append([(point,pareddown[2][point]),(pareddown[1][secondMove],secondMove)])
+                moves.add(((point,pareddown[2][point]),(pareddown[1][secondMove],secondMove)))
         temp=list(pareddown[1].keys())
-        #print(visited)
         for i in range(1,len(temp)):
             for j in range(0,i-1):
-                moves.append([(temp[i],pareddown[1][temp[i]]),(pareddown[1][temp[j]],temp[j])])
+                moves.add(((temp[i],pareddown[1][temp[i]]),(pareddown[1][temp[j]],temp[j])))
         return moves
 
     def get_neighbors(self,point, mincost=1,maxcost=2):
@@ -131,7 +121,6 @@ class grid:
         while(not toCheck.empty()):
             value,track=toCheck.get()
             test=track[0]
-            #print(visited)
             for neighbor in self.get_neighbors(test,0,2):
                 if(neighbor[1]+value<=cutoff):
                     seen=False
@@ -142,17 +131,26 @@ class grid:
                     if(not seen):
                         visited[value+neighbor[1]][neighbor[0]]=test
                         toCheck.put(((neighbor[1]+value),(neighbor[0],test)))
-            #print(value,test)
-            #for neighbor in self.get_neighbors(test,0,2):
-            #    if(neighbor[1]+value<=cutoff):
-            #        if(out[test[0]][test[1]]+neighbor[1]<out[neighbor[0][0]][neighbor[0][1]]):
-            #            #print(out[test[0]][test[1]]+neighbor[1],out[neighbor[0][0]][neighbor[0][1]])
-            #            out[neighbor[0][0]][neighbor[0][1]]=out[test[0]][test[1]]+neighbor[1]
-            #            toCheck.put((out[neighbor[0][0]][neighbor[0][1]],neighbor[0]))
-            #print()
         return visited
-
-
+    
+    def is_terminal(self, hands):
+        for player in hands.values():
+            player_done = True
+            for city in player.values():
+                if len(self.get_neighbors(city,0,0)) == 0:
+                    player_done = False
+                    break
+            if player_done:
+                for city in player.values():
+                    visited = self.LCS(city,0)[0]
+                    for city in player.values():
+                        if city not in visited:
+                            player_done = False
+                    break
+            if player_done:
+                return True
+        return False
+        
     def computeCosts(self,point):
         out=[]
         for i in range(0,self.size()[0]):
@@ -165,32 +163,26 @@ class grid:
         toCheck.put((0,point))
         while(not toCheck.empty()):
             value,test=toCheck.get()
-            #print(value,test)
             for neighbor in self.get_neighbors(test,0,2):
                 if(out[test[0]][test[1]]+neighbor[1]<out[neighbor[0][0]][neighbor[0][1]]):
-                    #print(out[test[0]][test[1]]+neighbor[1],out[neighbor[0][0]][neighbor[0][1]])
                     out[neighbor[0][0]][neighbor[0][1]]=out[test[0]][test[1]]+neighbor[1]
                     toCheck.put((out[neighbor[0][0]][neighbor[0][1]],neighbor[0]))
-            #print()
         return out
 
-    def make_move(self,playerNum,move):
-        #print(move)
+    def make_move(self,move,playerNum):
         if(self.turn!=playerNum):
             return False
         if(self.hubs[playerNum]==None):
             self.hubs[playerNum]=move
         else:
             for track in move:
-                print(track)
                 self.set(track[0],track[1],0)
         self.next_turn()
         return True
 
-    def unmake_move(self,root,playerNum,move):
+    def unmake_move(self,root_board,move,playerNum):
         for track in move:
-            print(track)
-            self.set(track[0],track[1],root.cost(track[0],track[1]))
+            self.set(track[0],track[1],root_board.cost(track[0],track[1]))
             self.turn=self.turn-1
             self.turn=self.turn%len(self.hubs)
         return True
@@ -203,7 +195,6 @@ class grid:
                 continue
             totals.append(0)
             tempcosts=self.computeCosts(self.hubs[i])
-            #print(tempcosts)
             for city in hands[players[i][0]].values():
                 totals[i]+=tempcosts[city[0]][city[1]]
         for i in range(0,len(totals)):
