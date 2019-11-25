@@ -110,19 +110,24 @@ class mctsAI:
         while True:
             children = node.children
             for move in node.unexpanded:
-                state.make_move(move, state.turn, False)
+                state.make_move(move, state.turn, True)
                 node.addMove(state, move)
                 return children[move]
             if state.is_terminal(self.hands):
                 return node
             best_move = max(children, key=lambda move: children[move])
-            state.make_move(best_move, state.turn, False)
+            state.make_move(best_move, state.turn, True)
             node = children[best_move]
     
     def rollout(self, state):
         ''' Returns the value of a random rollout from a node from the root player's perspective.'''
         _, totals = state.check_winner(self.hands)
         #print(totals)
+        totals=[0,0]
+        for i in [0,1]:
+            for city in self.hands[i].values():
+                totals[i]+=state.distances_left[i][city]
+        
         ans = (totals[1]-totals[0])/5
         #print(ans)
         return ans
