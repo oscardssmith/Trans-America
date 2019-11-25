@@ -46,7 +46,7 @@ class game:
         return self.board.check_winner(self.players,self.hands)
 
 
-players=[[0,minTotalAI],[1,minTotalAI]]
+players=[[0,mcts],[1,minTotalAI]]
 
 
 g=game(players,mapFeatures)
@@ -72,6 +72,8 @@ while running:
                 if(result[0]!=None):
                     done=True
                     print(result[0])
+            if event.key == pygame.K_q:
+                running = False
     w.draw(g.board)
 
 #print(g.graph.nodes)

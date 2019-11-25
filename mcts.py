@@ -60,11 +60,14 @@ class mctsAI:
         self.me=me
         #self.features=features
         self.hands=hands
-        self.hub=next(iter(hands[me].values())) #initial hub placement because it's OK
+        for i, loc in enumerate(hands[me].values()):
+            if i == 3:
+                break
+        self.hub= loc#initial hub placement because it's OK
         #self.board=board
         self.first_move = True
         
-    def move(self, state, rollouts=800):
+    def move(self, state, rollouts=2000):
         """Select a move by Monte Carlo tree search.
         Plays rollouts random games from the root node to a terminal state.
         In each rollout, play proceeds according to UCB while all children have
@@ -86,7 +89,7 @@ class mctsAI:
         root = Node(state, None)
         me = self.name
         for i in range(rollouts):
-            if not i%50:
+            if not i%200:
                 print(i)
             leaf = self.representative_leaf(root, deepcopy(state)) #deepcopy to not overwrite root state
 

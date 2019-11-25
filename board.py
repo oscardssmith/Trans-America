@@ -1,11 +1,12 @@
 import mapFeatures
 import queue
 
+costs=[]
+
 class grid:
     def __init__(self, mountains, oceans,numPlayers,hubs=[]):
         self.turn=0
         self.board=[]
-        self.costs=[]
         self.hubs=[]
         self.player_nodes_in_reach=[]
         self.tracks_left=2
@@ -27,9 +28,9 @@ class grid:
             for neighbor in self.get_neighbors(ocean):
                 self.set(ocean,neighbor[0],3)
         for i in range(0,13):
-            self.costs.append([])
+            costs.append([])
             for j in range(0,20):
-                self.costs[i].append(self.computeCosts((i,j)))
+                costs[i].append(self.computeCosts((i,j)))
 
 
     def cost(self,point1,point2):
