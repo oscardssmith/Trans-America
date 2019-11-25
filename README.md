@@ -1,4 +1,5 @@
 # Trans-America
+## Introduction
 We implimented a perfect information Trans America game (you know where your opponent's cities are)
 and 2 AI's that can play it
 * mcts
@@ -14,3 +15,12 @@ and Progressive Bias, by allowing some domain knowledge (being close to connecte
 
 minTotalAI tries to greadily reduce the length to win.
 MinSiddwenceAI tries to greadily recude the length to win, while trying to not reduce the length of it's opponent.
+
+Based on a match we have run, we find that mcts with 400 rollouts about 65 elo better than difference based on 49 pairs of games
+and that is 168 elo better than minTotalAI
+
+## Requirements
+pygame (python3 -m pip install pygame)
+
+## To run a graphical game (by default mcts vs minDifferenceAI):
+    python3 game.py
