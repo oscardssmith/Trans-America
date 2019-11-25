@@ -4,9 +4,9 @@ import random
 import copy
 
 def init(board,features,me,hands):
-    return minTotalAI(board,features,me,hands)
+    return minDifferenceAI(board,features,me,hands)
 
-class minTotalAI:
+class minDifferenceAI:
     
     def __init__(self,board,features,me,hands):
         self.name=me
@@ -14,17 +14,25 @@ class minTotalAI:
         self.hands=hands
         self.cities=[]
         self.costs=[]
+        self.city_costs=[]
         self.hub=None
         self.board=board
         for city in self.hands[self.name].values():
             self.cities.append(city)
         self.costs=copy.deepcopy(b.costs[self.cities[0][0]][self.cities[0][1]])
         
+        
         for city in self.cities[1:]:
             for i in range(0,self.board.size()[0]):
                 for j in range(0,self.board.size()[1]):
                     self.costs[i][j]+=b.costs[city[0]][city[1]][i][j]
 
+        for player in self.hands.keys():
+            if(player!=self.name):
+                for city in self.hands[player].values():
+                    for i in range(0,self.board.size()[0]):
+                        for j in range(0,self.board.size()[1]):
+                            self.costs[i][j]-=b.costs[city[0]][city[1]][i][j]
     
     def move(self,board):
         if(self.hub==None):
@@ -39,23 +47,29 @@ class minTotalAI:
                         minspot=(i,j)
                         mincost=self.costs[i][j]
             self.hub=minspot
+            for city in self.cities:
+                self.city_costs.append(b.costs[minspot[0]][minspot[1]][city[0]][city[1]])
             return minspot
         #print(self.hub)
         possibleMoves=list(board.get_moves(self.hub))
         #print(len(possibleMoves))
         values=[]
         for move in possibleMoves:
-            state=[]
+            state=0
             tempdistances=copy.deepcopy(board.distances_left)
             tempdistances=self.eval_move(board.turn,move,board,tempdistances)
             for i in range(0,len(self.cities)):
-                total=tempdistances[self.name][self.cities[i]]
-                state.append(total)
+                state+=tempdistances[self.name][self.cities[i]]
+            for player in self.hands.keys():
+                if(player!=self.name):
+                    for city in self.hands[player].values():
+                        state=state-tempdistances[player][city]
             values.append(state)
         bestMove=0
         for i in range(0,len(possibleMoves)):
-            if(sum(values[i])<sum(values[bestMove])):
+            if(values[i]<values[bestMove]):
                 bestMove=i
+        self.city_costs=values[bestMove]
         #print(values,bestMove)
         #print(possibleMoves[bestMove])
         return possibleMoves[bestMove]
