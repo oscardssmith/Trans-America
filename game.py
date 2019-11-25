@@ -35,6 +35,7 @@ class game:
     def take_turn(self):
         move=self.players[self.board.turn][1].move(copy.deepcopy(self.board))
         self.board.make_move(move, self.board.turn)
+        print(self.board.distances_left)
         return self.board.check_winner(self.players,self.hands)
         
     def make_move(self, move, player):
@@ -72,6 +73,8 @@ while running:
                 if(result[0]!=None):
                     done=True
                     print(result[0])
+            if event.key == pygame.K_q:
+                running = False
     w.draw(g.board)
 
 #print(g.graph.nodes)

@@ -19,14 +19,13 @@ class minTotalAI:
         self.board=board
         for city in self.hands[self.name].values():
             self.cities.append(city)
-        self.costs=b.costs[self.cities[0][0]][self.cities[0][1]]
+        self.costs=copy.deepcopy(b.costs[self.cities[0][0]][self.cities[0][1]])
         
         for city in self.cities[1:]:
             for i in range(0,self.board.size()[0]):
                 for j in range(0,self.board.size()[1]):
                     self.costs[i][j]+=b.costs[city[0]][city[1]][i][j]
 
-        print(self.costs)
     
     def move(self,board):
         if(self.hub==None):
@@ -46,16 +45,14 @@ class minTotalAI:
             return minspot
         #print(self.hub)
         possibleMoves=list(board.get_moves(self.hub))
+        print(len(possibleMoves))
         values=[]
         for move in possibleMoves:
-            print(move)
             state=[]
+            tempboard=copy.deepcopy(board)
+            tempboard.make_move(move,tempboard.turn)
             for i in range(0,len(self.cities)):
-                total=self.city_costs[i]
-                for spot in move:
-                    #tempcosts=board.computeCosts(spot)
-                    if(b.costs[spot[0]][spot[1]][self.cities[i][0]][self.cities[i][1]]<total):
-                        total=b.costs[spot[0]][spot[1]][self.cities[i][0]][self.cities[i][1]]
+                total=tempboard.distances_left[self.name][self.cities[i]]
                 state.append(total)
             values.append(state)
         bestMove=0
@@ -63,5 +60,6 @@ class minTotalAI:
             if(sum(values[i])<sum(values[bestMove])):
                 bestMove=i
         self.city_costs=values[bestMove]
+        print(values,bestMove)
         print(possibleMoves[bestMove])
         return possibleMoves[bestMove]

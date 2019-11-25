@@ -51,7 +51,6 @@ class window:
                     if(point[1]==0):
                         color=(255,255,255)
                     self.draw_thicc_line(p1, p2, abs(7*point[1]-6),color)
-        #print(board.cities.keys())
         for color in self.cities.keys():
             for city in self.cities[color].values():
                 center = self.get_coords(city[0],city[1])
