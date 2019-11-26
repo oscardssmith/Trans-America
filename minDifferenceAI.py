@@ -3,20 +3,14 @@ import board
 import random
 import copy
 
-temp=0
-
 #Another simple AI. Minimize my cost - opponent cost. Currently only works single player, but that's okay.
+
 def init(board,features,me,hands):
-    min_all=False
-    if(temp==me):
-        #print(me)
-        #min_all=True
-        pass
-    return minDifferenceAI(board,features,me,hands,min_all)
+    return minDifferenceAI(board,features,me,hands)
 
 class minDifferenceAI:
     
-    def __init__(self,board,features,me,hands,min_all=False):
+    def __init__(self,board,features,me,hands):
         self.name=me
         self.features=features
         self.hands=hands
@@ -24,7 +18,6 @@ class minDifferenceAI:
         self.costs=[]
         self.hub=None
         self.board=board
-        self.min_all=min_all
 
         #Compute my cost - opponent cost for hub placements
         for city in self.hands[self.name].values():
@@ -69,10 +62,7 @@ class minDifferenceAI:
             for player in self.hands.keys():
                 if(player!=self.name):
                     for city in self.hands[player].values():
-                        if(self.min_all):
-                            state=state-min(tempdistances[player][city],tempdistances[self.name][city])
-                        else:
-                            state=state-tempdistances[player][city]
+                        state=state-tempdistances[player][city]
             values.append(state)
         bestMove=0
         for i in range(0,len(possibleMoves)):
