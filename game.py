@@ -9,6 +9,7 @@ import graphics
 import pygame
 
 class game:
+    ''' class for runnign a single game. '''
     features=None
 
     def __init__(self,players,features, inboard=None,hands=None):
@@ -51,7 +52,6 @@ class game:
 def run_tournament(num, ai1, ai2):
     wins=[0,0,0]
     while(sum(wins)<num):
-        minDifferenceAI.temp=0
         players=[[0,ai1],[1,ai2]]
         g=game(players,mapFeatures)
 
@@ -59,7 +59,6 @@ def run_tournament(num, ai1, ai2):
         hands2=copy.deepcopy(g.hands)
         winner1, score=g.play_game()
 
-        minDifferenceAI.temp=1
         g2=game([[0,ai2],[1,ai1]],mapFeatures,gBoard,hands2)
         winner2, score=g2.play_game()
         if(winner1!=winner2):
@@ -98,4 +97,5 @@ def run_graphics(ai1, ai2):
         w.draw(g.board, g.hands)
 
 if __name__ == '__main__':
-    run_tournament(100, mcts, minDifferenceAI)
+    run_graphics(mcts, minDifferenceAI)
+    #run_tournament(100, mcts, minDifferenceAI)

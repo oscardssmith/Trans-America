@@ -3,7 +3,9 @@ from math import sqrt
 import math
 import random
 
-from minDifferenceAI import eval_move
+# This mcts code is way ugly because you sometimes place 2 tracks -> make 2 moves in a row, so backprop
+# gets really nasty
+from minDifferenceAI import eval_move #used for fpu
 
 UCB_CONST = .75
 hands = None
@@ -148,7 +150,7 @@ class mctsAI:
             node = children[best_move]
     
     def rollout(self, state):
-        ''' Returns the value of a random rollout from a node from the root player's perspective.'''
+        ''' We stopped using real rollouts because they were slow and inaccurate. '''
         
         return heuristic_value(state, self.me)
         #while not state.is_terminal(self.hands):

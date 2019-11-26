@@ -16,6 +16,7 @@ colors={'blue':(128,128,255),
 xres = 1600
 yres = 900
 class window:
+    '''draws everything'''
     screen = None
     cities = None
     s=None
@@ -35,6 +36,7 @@ class window:
     
     
     def get_coords(self,i,j):
+        '''board coords to screen coords'''
         i += 1
         j += 1
         return (int(self.scaling[0]*(j*self.basis[0][0]+i*self.basis[1][0]-self.extrema[1][0])),
@@ -69,6 +71,7 @@ class window:
                                     self.get_coords(city[0],city[1]),
                                     int(0.2*min(self.scaling)),
                                     2)
+        # draw hubs if placed
         for player, hub in enumerate(board.hubs):
             if hub is None:
                 continue
@@ -78,8 +81,9 @@ class window:
         #pygame.draw.line(s,(255,255,255),(50,0),(50,100))
         self.screen.blit(self.s,(0,0))
         pygame.display.update()
-
+    
     def draw_thicc_line(self, p0, p1, thickness, color = (255,255,255)):
+        ''' utility function to draw anti-aliased thcik lines. '''
         center_x = (p0[0]+p1[0])/2
         center_y = (p0[1]+p1[1])/2
         # The +1 is to get out of the domain error
@@ -100,6 +104,7 @@ class window:
         BR = (center_x - hlength*cangle + hthick *sangle,
               center_y - hthick *cangle - hlength*sangle)
         pygame.gfxdraw.aapolygon(self.s, (UL, UR, BR, BL), color)
+        #if not a double cost location, fill in the line
         if thickness != 8:
             pygame.gfxdraw.filled_polygon(self.s, (UL, UR, BR, BL), color)
         

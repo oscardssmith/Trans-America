@@ -16,7 +16,7 @@ and Progressive Bias, by allowing some domain knowledge (being close to connecte
 minTotalAI tries to greadily reduce the length to win.
 MinSiddwenceAI tries to greadily recude the length to win, while trying to not reduce the length of it's opponent.
 
-Based on a match we have run, we find that mcts with 400 rollouts about 65 elo better than difference based on 49 pairs of games
+Based on a match we have run, we find that mcts with 400 rollouts about 25 elo better than difference based on 49 pairs of games
 and that is 168 elo better than minTotalAI
 
 ## Requirements
