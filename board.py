@@ -88,6 +88,103 @@ class grid:
                         break
         return moves
 
+    def make_move(self,move,playerNum,update=True):
+        if(self.turn!=playerNum):
+            raise Exception("Stop It")
+        if(self.hubs[playerNum]==None):
+            self.hubs[playerNum]=move
+            reachable=self.get_neighbors(move)
+            self.player_nodes_in_reach[playerNum][0].add(move)
+            for i in range(0,len(reachable)):
+                self.player_nodes_in_reach[playerNum][reachable[i][1]].add(reachable[i][0])
+            self.next_turn(2)
+
+            #Compute relevant distances for this hub placement
+            if(update):
+                self.distances_left.append({})
+                for city in self.cities.values():
+                    for location in city.values():
+                        self.distances_left[playerNum][location]=costs[move[0]][move[1]][location[0]][location[1]]
+                for j in range(0,playerNum+1):
+                    hub=self.hubs[j]
+                    if(hub==None):
+                        continue
+                    self.distances_left[playerNum][hub]=costs[move[0]][move[1]][hub[0]][hub[1]]
+                    self.distances_left[j][move]=costs[move[0]][move[1]][hub[0]][hub[1]]
+
+
+            return True
+        cost=self.cost(move[0],move[1])
+        self.next_turn(cost)
+        self.set(move[0],move[1],0)
+        for track in move:
+            if(track not in self.player_nodes_in_reach[playerNum][0]):
+                #Update distances for this track placement
+                if(update):
+                    for i in range(0,len(self.hubs)):
+                        if(i==playerNum):
+                            continue
+                        hub=self.hubs[i]
+                        if(self.distances_left[playerNum][hub]>0):
+                            for compare_track in self.player_nodes_in_reach[i][0]:
+                                if(costs[track[0]][track[1]][compare_track[0]][compare_track[1]]<self.distances_left[playerNum][hub]):
+                                    self.distances_left[playerNum][hub]=costs[track[0]][track[1]][compare_track[0]][compare_track[1]]
+                                if(costs[track[0]][track[1]][compare_track[0]][compare_track[1]]<self.distances_left[i][self.hubs[playerNum]]):
+                                    self.distances_left[i][self.hubs[playerNum]]=costs[track[0]][track[1]][compare_track[0]][compare_track[1]]
+                    for city in self.cities.values():
+                        for location in city.values():
+                            if(costs[track[0]][track[1]][location[0]][location[1]]<self.distances_left[playerNum][location]):
+                                self.distances_left[playerNum][location]=costs[track[0]][track[1]][location[0]][location[1]]
+                    for i in range(0,len(self.hubs)):
+                        for j in range(0,len(self.hubs)):
+                            if(self.distances_left[j][self.hubs[playerNum]]+self.distances_left[playerNum][self.hubs[i]]<self.distances_left[j][self.hubs[i]]):
+                                self.distances_left[j][self.hubs[i]]=self.distances_left[j][self.hubs[playerNum]]+self.distances_left[playerNum][self.hubs[i]]
+                            if(self.distances_left[i][self.hubs[playerNum]]+self.distances_left[playerNum][self.hubs[j]]<self.distances_left[i][self.hubs[j]]):
+                                self.distances_left[i][self.hubs[i]]=self.distances_left[i][self.hubs[playerNum]]+self.distances_left[playerNum][self.hubs[j]]
+                        for city in self.cities.values():
+                            for location in city.values():
+                                if(self.distances_left[i][location]>self.distances_left[playerNum][location]+self.distances_left[i][self.hubs[playerNum]]):
+                                    self.distances_left[i][location]=self.distances_left[playerNum][location]+self.distances_left[i][self.hubs[playerNum]]
+                                if(self.distances_left[playerNum][location]>self.distances_left[i][location]+self.distances_left[playerNum][self.hubs[i]]):
+                                    self.distances_left[playerNum][location]=self.distances_left[i][location]+self.distances_left[playerNum][self.hubs[i]]
+
+
+                if track in self.player_nodes_in_reach[playerNum][cost]:
+                    self.player_nodes_in_reach[playerNum][cost].remove(track)
+                self.player_nodes_in_reach[playerNum][0].add(track)
+                reachable=self.get_neighbors(track)
+                for i in range(0,len(reachable)):
+                    node=reachable[i][0]
+                    worth=True
+                    for j in range(0,reachable[i][1]):
+                        if(node in self.player_nodes_in_reach[playerNum][j]):
+                            worth=False
+                            break
+                    if(worth):
+                        self.player_nodes_in_reach[playerNum][reachable[i][1]].add(node)
+                    for k in range(reachable[i][1]+1,3):
+                        if(node in self.player_nodes_in_reach[playerNum][k]):
+                            self.player_nodes_in_reach[playerNum][k].remove(node)
+                for i in range(0,len(self.player_nodes_in_reach)):
+                    if(i==playerNum):
+                        continue
+                    elif(track in self.player_nodes_in_reach[i][0]):
+                        for j in range(0,3):
+                            self.player_nodes_in_reach[playerNum][j].update(self.player_nodes_in_reach[i][j])
+                            self.player_nodes_in_reach[i][j]=self.player_nodes_in_reach[playerNum][j]
+        for i in range(0,len(self.player_nodes_in_reach)):
+            if(i==playerNum):
+                continue
+            for track in move:
+                if(track in self.player_nodes_in_reach[i][0]):
+                    for j in range(0,3):
+                        self.player_nodes_in_reach[playerNum][j].update(self.player_nodes_in_reach[i][j])
+                        self.player_nodes_in_reach[i][j]=self.player_nodes_in_reach[playerNum][j]
+                    self.player_nodes_in_reach[playerNum][2].difference_update(self.player_nodes_in_reach[playerNum][1])
+                    self.player_nodes_in_reach[playerNum][2].difference_update(self.player_nodes_in_reach[playerNum][0])
+                    self.player_nodes_in_reach[playerNum][1].difference_update(self.player_nodes_in_reach[playerNum][0])
+        return True
+        
     def get_neighbors(self,point, mincost=1,maxcost=2):
         neighbors=[]
         if(point[0]+1<len(self.board)):
@@ -157,7 +254,7 @@ class grid:
         return True
         
     def computeCosts(self,point):
-        ''' Computes costs to everywhere using BFS'''
+        ''' Computes costs to everywhere using BFS. Stores results in costs'''
         out=[]
         for i in range(0,self.size()[0]):
             temp=[]
@@ -175,21 +272,6 @@ class grid:
                     toCheck.put((out[neighbor[0][0]][neighbor[0][1]],neighbor[0]))
         return out
 
-
-    def check_winner(self,hands):
-        totals=[]
-        for i in range(0,len(self.hubs)):
-            if(self.hubs[i]==None):
-                totals.append(None)
-                continue
-            totals.append(0)
-            tempcosts=self.computeCosts(self.hubs[i])
-            for city in hands[i].values():
-                totals[i]+=tempcosts[city[0]][city[1]]
-        for i in range(0,len(totals)):
-            if(totals[i]==0):
-                return i,totals
-        return None,totals
 
     def get_totals(self,hands):
         totals=[]
