@@ -17,12 +17,17 @@ class Node:
         state. parent_node is the Node that is the parent of this
         one in the MCTS tree. """
         self.parent = parent_node
+        # Turn of the player who moved to get to this board state
+        # needed for backups.
         self.turn = turn
         self.children = {} # maps moves (keys) to Nodes (values); if you use it differently, you must also change addMove
         self.unexpanded = list(state.get_moves(state.hubs[state.turn])) # Stores unvisited moves to speed up search
-        self.unexpanded.sort(key = lambda x: self.fpu(x,state))
+        # Sort unexpanded moves by how good we think they are
+        # This makes node values much more reliable before all children are evaluated.
+        self.unexpanded.sort(key = lambda x: self.fpu(x,state)) 
         self.visits = 0
         self.value = 0
+        # Heuristic which decays from UCB equation to give decent initial values
         self.heuristic = heuristic_value(state, self.turn)
 
     def addMove(self, state, move, turn):
@@ -56,6 +61,7 @@ class Node:
                sqrt(sqrt(self.parent.visits)/self.visits) * UCB_CONST)
     
     def fpu(self, move, state):
+        ''' Computes quick and dirty estimate of node value to get move ordering'''
         tempdistances=deepcopy(state.distances_left)
         tempdistances=eval_move(state.turn,move,state,tempdistances)
         difference = 0
@@ -83,10 +89,8 @@ class mctsAI:
     def __init__(self,board,features,me,hands):
         self.name=me
         self.me=me
-        #self.features=features
         self.hands=hands
         self.hub= None
-        #self.board=board
         self.first_move = True
         
     def move(self, state, rollouts=400):
@@ -121,8 +125,9 @@ class mctsAI:
         root = Node(state, None, 1-self.me)
         me = self.name
         for i in range(rollouts):
+            #deepcopy to not overwrite root state
             new_state = deepcopy(state)
-            leaf = self.representative_leaf(root, new_state) #deepcopy to not overwrite root state
+            leaf = self.representative_leaf(root, new_state) 
 
             value = self.rollout(new_state)
             leaf.updateValue(value, self.me)
@@ -149,12 +154,12 @@ class mctsAI:
             state.make_move(best_move, state.turn, True)
             node = children[best_move]
     
-    def rollout(self, state):
+    def rollout(self, state, depth=0):
         ''' We stopped using real rollouts because they were slow and inaccurate. '''
         
+        while depth > 0 and not state.is_terminal(self.hands):
+            moves = state.get_moves(self.hub)
+            state.make_move(random.sample(moves, 1)[0], state.turn, True)
+            depth -= 1
         return heuristic_value(state, self.me)
-        #while not state.is_terminal(self.hands):
-        #    moves = state.get_moves(self.hub)
-        #    state.make_move(random.sample(moves, 1)[0], state.turn, False)
-        #return (state.value(self.hands) == self.me)*2 -1
 
