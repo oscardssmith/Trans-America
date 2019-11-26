@@ -1,7 +1,7 @@
 # Trans-America
 ## Introduction
-We implimented a perfect information Trans America game (you know where your opponent's cities are)
-and 2 AI's that can play it
+We implimented a perfect information 2 player Trans America game (you know where your opponent's cities are)
+and 3 AI's that can play it
 * mcts
 * minTotalAI
 * minDifferenceAI
@@ -24,3 +24,7 @@ pygame (python3 -m pip install pygame)
 
 ## To run a graphical game (by default mcts vs minDifferenceAI):
     python3 game.py
+
+Push w to advance a move. game.py aslo contains a function to run a tournament.
+
+More players can also be included as modules for game, provided they have a valid init function that returns something with a valid move function.

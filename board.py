@@ -1,7 +1,7 @@
 import mapFeatures
 import queue
 
-#stores inital costs to all cities for faster heuristics
+#stores inital costs to all cities for faster heuristics, namely [i][j][k][l] is the initial cost to get from (i,j) to (k,l). This does not update.
 costs=[]
 
 class grid:
@@ -11,7 +11,10 @@ class grid:
         self.board=[]
         self.hubs=[]
         self.cities=features.cities
+        #Has 3 sets per player: Nodes within a 0 cost edge of the hub, Nodes within a 1 cost edge of the hub
+        #and Nodes within a 2 cost edge of the hub, at indices [0],[1], and [2]
         self.player_nodes_in_reach=[]
+        #Dictionary per player of locations and minimum tracks to reach them from the hub. Includes using other player's track.
         self.distances_left=[]
         self.tracks_left=2
         for i in range(0,numPlayers):
@@ -36,7 +39,7 @@ class grid:
             for j in range(0,20):
                 costs[i].append(self.computeCosts((i,j)))
 
-
+    #Getters and setters for an edge
     def cost(self,point1,point2):
         ''' Cost to get from point 1 to point 2'''
         offset=sum((point1[0]-point2[0],point1[1]-point2[1]))
@@ -46,7 +49,6 @@ class grid:
         elif(offset>0):
             change=(point1[0]-point2[0],point1[1]-point2[1])
             return self.board[point2[0]][point2[1]][change[0]][change[1]]
-
     def set(self,point1,point2,cost):
         ''' Sets the path cost (used in make_move)'''
         offset=sum((point1[0]-point2[0],point1[1]-point2[1]))
@@ -56,6 +58,7 @@ class grid:
         elif(offset>0):
             change=(point1[0]-point2[0],point1[1]-point2[1])
             self.board[point2[0]][point2[1]][change[0]][change[1]]=cost
+
 
     def size(self):
         return (len(self.board),len(self.board[0]))
@@ -119,7 +122,7 @@ class grid:
         self.set(move[0],move[1],0)
         for track in move:
             if(track not in self.player_nodes_in_reach[playerNum][0]):
-                #Update distances for this track placement
+                #Update distances for this track placement. This uses a Floyd-Warshall like algorithm 
                 if(update):
                     for i in range(0,len(self.hubs)):
                         if(i==playerNum):
@@ -148,7 +151,7 @@ class grid:
                                 if(self.distances_left[playerNum][location]>self.distances_left[i][location]+self.distances_left[playerNum][self.hubs[i]]):
                                     self.distances_left[playerNum][location]=self.distances_left[i][location]+self.distances_left[playerNum][self.hubs[i]]
 
-
+                #Update set of possible moves
                 if track in self.player_nodes_in_reach[playerNum][cost]:
                     self.player_nodes_in_reach[playerNum][cost].remove(track)
                 self.player_nodes_in_reach[playerNum][0].add(track)
@@ -165,6 +168,7 @@ class grid:
                     for k in range(reachable[i][1]+1,3):
                         if(node in self.player_nodes_in_reach[playerNum][k]):
                             self.player_nodes_in_reach[playerNum][k].remove(node)
+                #Note that if we hit another player, we need to union the possible moves
                 for i in range(0,len(self.player_nodes_in_reach)):
                     if(i==playerNum):
                         continue
@@ -172,6 +176,7 @@ class grid:
                         for j in range(0,3):
                             self.player_nodes_in_reach[playerNum][j].update(self.player_nodes_in_reach[i][j])
                             self.player_nodes_in_reach[i][j]=self.player_nodes_in_reach[playerNum][j]
+        #Apparently we do it twice, because better safe than sorry.
         for i in range(0,len(self.player_nodes_in_reach)):
             if(i==playerNum):
                 continue
@@ -184,7 +189,8 @@ class grid:
                     self.player_nodes_in_reach[playerNum][2].difference_update(self.player_nodes_in_reach[playerNum][0])
                     self.player_nodes_in_reach[playerNum][1].difference_update(self.player_nodes_in_reach[playerNum][0])
         return True
-        
+    
+    #Returns neighbors with cost between mincost and maxcost of a given node
     def get_neighbors(self,point, mincost=1,maxcost=2):
         neighbors=[]
         if(point[0]+1<len(self.board)):
@@ -214,6 +220,7 @@ class grid:
         return neighbors
         
 
+    #Lowest cost search (up to a cutoff). minweight also allows ignoring 0-cost edges.
     def LCS(self,point,cutoff,minweight=0):
         visited=[]
         for i in range(0,cutoff+1):
@@ -282,7 +289,7 @@ class grid:
         return totals
         
     def next_turn(self,tracks):
-        ''' Returns who's turnh is next. Not trivial because each track is a move'''
+        ''' Changes the turn to the next player. Not trivial because each track is a move'''
         if(self.tracks_left-tracks==0):
             self.turn+=1
             self.turn=self.turn%len(self.hubs)
