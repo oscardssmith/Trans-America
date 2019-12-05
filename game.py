@@ -79,8 +79,14 @@ def run_graphics(ai1, ai2):
 
     running = True
     done = False
+    draw = True
+
     # main loop
     while running:
+        if draw:
+            w.draw(g.board, g.hands)
+            draw = False
+
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
             # only do something if the event is of type QUIT
@@ -90,11 +96,11 @@ def run_graphics(ai1, ai2):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w and not done:
                     done=g.take_turn()
+                    draw = True
                     if done:
                         print(g.board.value(g.hands))
                 if event.key == pygame.K_q:
                     running = False
-        w.draw(g.board, g.hands)
 
 if __name__ == '__main__':
     run_graphics(mcts, minDifferenceAI)
