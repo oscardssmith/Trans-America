@@ -20,11 +20,13 @@ class window:
     screen = None
     cities = None
     s=None
+    font=None
     basis=None
     extrema=None
     scaling=None
     def __init__(self,width,height,features,basis = ([1,0],[-0.5,math.sqrt(3)/4])):
         pygame.init()
+        self.font=pygame.font.SysFont(None, 24)
         self.screen=pygame.display.set_mode((width,height))
         self.s=pygame.Surface((xres,yres))
         self.basis=basis
@@ -108,4 +110,29 @@ class window:
         if thickness != 8:
             pygame.gfxdraw.filled_polygon(self.s, (UL, UR, BR, BL), color)
         
+
+    def draw_text(self, box, hoffset):
+        sz = box.get_size()
+        dest = pygame.Rect(xres - sz[0], yres - sz[1] - hoffset, sz[0], sz[1])
+        self.screen.blit(box, dest)
+        pygame.display.update()
+
+    def draw_turn(self, turn, player, tracks):
+        turnbox = self.font.render("Turn {} ".format(turn), True, (255, 255, 255))
+        playerbox = self.font.render("Player {} ".format(player), True, (255, 255, 255))
+        trackbox = self.font.render("Tracks Left {} ".format(tracks), True, (255, 255, 255))
+        maxw = turnbox.get_size()[0]
+        h = turnbox.get_size()[1] + 3
+        if playerbox.get_size()[0] > maxw:
+            maxw = playerbox.get_size()[0]
+        if trackbox.get_size()[0] > maxw:
+            maxw = trackbox.get_size()[0]
+
+        # Clear a more than large enough space
+        dest = pygame.Rect(xres - maxw * 2, yres - h * 3, maxw * 2, h * 3)
+        self.s.fill((0, 0, 0), dest)
+
+        self.draw_text(turnbox, 0)
+        self.draw_text(playerbox, h)
+        self.draw_text(trackbox, h * 2)
 

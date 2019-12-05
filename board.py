@@ -8,6 +8,7 @@ class grid:
     def __init__(self, features,numPlayers,hubs=[]):
         ''' sets up the board '''
         self.turn=0
+        self.total_turns=0
         self.board=[]
         self.hubs=[]
         self.cities=features.cities
@@ -294,6 +295,7 @@ class grid:
             self.turn+=1
             self.turn=self.turn%len(self.hubs)
             self.tracks_left=2
+            self.total_turns+=1
         else:
             self.tracks_left=self.tracks_left-tracks
 

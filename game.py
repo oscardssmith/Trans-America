@@ -85,6 +85,8 @@ def run_graphics(ai1, ai2):
     while running:
         if draw:
             w.draw(g.board, g.hands)
+            w.draw_turn(int((g.board.total_turns / len(players)) + 1),
+                g.board.turn + 1, g.board.tracks_left)
             draw = False
 
         # event handling, gets all event from the event queue
