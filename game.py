@@ -4,7 +4,7 @@ import random
 import copy
 import graphics
 
-class game:
+class Game:
     ''' class for running a single game. '''
     features=None
 

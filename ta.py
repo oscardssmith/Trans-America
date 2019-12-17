@@ -1,38 +1,44 @@
 #!/usr/bin/python3
-from game import game
+""" ta.py
+    Run the Trans America AI competition
+
+    This file is the mainline for starting single games and tournaments.
+"""
+import copy
+import pygame
+from game import Game
 import graphics
 import mcts
-import minTotalAI
 import minDifferenceAI
 import mapFeatures
-import pygame
 
 def run_tournament(num, ai1, ai2):
-    wins=[0,0,0]
-    while(sum(wins)<num):
-        players = [[0,ai1],[1,ai2]]
-        g = game(players,mapFeatures)
+    """  Run num games against two ais, printing who wins """
+    wins = [0, 0, 0]
+    while sum(wins) < num:
+        players = [[0, ai1], [1, ai2]]
+        game = Game(players, mapFeatures)
 
-        gBoard = copy.deepcopy(g.board)
-        hands2 = copy.deepcopy(g.hands)
-        winner1 = g.play_game()
+        board = copy.deepcopy(game.board)
+        hands = copy.deepcopy(game.hands)
+        winner1 = game.play_game()
 
-        g2 = game([[0,ai2],[1,ai1]],mapFeatures,gBoard,hands2)
-        winner2 =g2.play_game()
+        game2 = Game([[0, ai2], [1, ai1]], mapFeatures, board, hands)
+        winner2 = game2.play_game()
         if winner1 != winner2:
             print(winner1)
-            wins[winner1]+=1
+            wins[winner1] += 1
         else:
             print("draw")
-            wins[2]+=1
+            wins[2] += 1
     print(wins)
 
 def run_graphics(ai1, ai2):
-    players=[[0,ai1],[1,ai2]]
-    g=game(players,mapFeatures)
-    
-    w = graphics.window(graphics.xres,graphics.yres,mapFeatures)
-    grid=g.board
+    """  Run a game and display it graphically """
+    players = [[0, ai1], [1, ai2]]
+    game = Game(players, mapFeatures)
+
+    window = graphics.window(graphics.xres, graphics.yres, mapFeatures)
 
     running = True
     done = False
@@ -41,9 +47,9 @@ def run_graphics(ai1, ai2):
     # main loop
     while running:
         if draw:
-            w.draw(g.board, g.hands)
-            w.draw_turn(int((g.board.total_turns / len(players)) + 1),
-                g.board.turn + 1, g.board.tracks_left)
+            window.draw(game.board, game.hands)
+            window.draw_turn(int((game.board.total_turns / len(players)) + 1),
+                             game.board.turn + 1, game.board.tracks_left)
             draw = False
 
         # event handling, gets all event from the event queue
@@ -54,10 +60,10 @@ def run_graphics(ai1, ai2):
                 running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w and not done:
-                    done=g.take_turn()
+                    done = game.take_turn()
                     draw = True
                     if done:
-                        print(g.board.value(g.hands))
+                        print(game.board.value(game.hands))
                 if event.key == pygame.K_q:
                     running = False
 
