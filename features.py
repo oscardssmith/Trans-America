@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """ features.py
     This file defines a Trans America map
 

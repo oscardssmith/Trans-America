@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """ game.py contains Game control logic for Trans-America """
 import random
 import copy

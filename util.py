@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """ util.py contains various utility routines for Trans America """
 import pygame
 
