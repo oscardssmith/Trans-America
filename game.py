@@ -24,9 +24,9 @@ class Game:
         else:
             self.board = inboard
         if hands is None:
-            for key in self.features.CITIES.keys():
+            for key, citygroup in self.features.CITIES.items():
                 values = []
-                for i in self.features.CITIES[key].keys():
+                for i in iter(citygroup.keys()):
                     values.append(i)
                 cities = random.sample(values, len(self.players))
                 for i in range(0, len(self.players)):

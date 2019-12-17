@@ -6,7 +6,7 @@
 """
 import copy
 from game import Game
-import graphics
+import window
 import mcts
 import minDifferenceAI
 
@@ -36,9 +36,9 @@ def run_graphics(ai1, ai2):
     players = [[0, ai1], [1, ai2]]
     game = Game(players)
 
-    window = graphics.window(graphics.xres, graphics.yres)
+    win = window.Window()
 
-    game.play_game(window, True)
+    game.play_game(win, True)
     print(game.board.value(game.hands))
 
 if __name__ == '__main__':
