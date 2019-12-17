@@ -146,6 +146,7 @@ class Window:
         self.draw_text(playerbox, h)
         self.draw_text(trackbox, h * 2)
 
+        self.screen.blit(self.surface, (0, 0))
         pygame.display.update()
 
     def draw(self, board, hands):
