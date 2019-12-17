@@ -15,6 +15,7 @@ colors={'blue':(128,128,255),
 
 xres = 1600
 yres = 900
+show_real = True
 class window:
     '''draws everything'''
     screen = None
@@ -41,8 +42,13 @@ class window:
         '''board coords to screen coords'''
         i += 1
         j += 1
-        return (int(self.scaling[0]*(j*self.basis[0][0]+i*self.basis[1][0]-self.extrema[1][0])),
-                int(self.scaling[1]*(j*self.basis[0][1]+i*self.basis[1][1])))
+        if show_real:
+            # Don't show the 'human scale' version of the board; represent it
+            #  as the computer sees it
+            return (j * 70, i * 60)
+        else:
+            return (int(self.scaling[0]*(j*self.basis[0][0]+i*self.basis[1][0]-self.extrema[1][0])),
+                    int(self.scaling[1]*(j*self.basis[0][1]+i*self.basis[1][1])))
                 
     def draw(self,board, hands):
         # Draw the lines
