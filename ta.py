@@ -5,7 +5,6 @@
     This file is the mainline for starting single games and tournaments.
 """
 import copy
-import pygame
 from game import Game
 import graphics
 import mcts
@@ -40,32 +39,8 @@ def run_graphics(ai1, ai2):
 
     window = graphics.window(graphics.xres, graphics.yres, mapFeatures)
 
-    running = True
-    done = False
-    draw = True
-
-    # main loop
-    while running:
-        if draw:
-            window.draw(game.board, game.hands)
-            window.draw_turn(int((game.board.total_turns / len(players)) + 1),
-                             game.board.turn + 1, game.board.tracks_left)
-            draw = False
-
-        # event handling, gets all event from the event queue
-        for event in pygame.event.get():
-            # only do something if the event is of type QUIT
-            if event.type == pygame.QUIT:
-                # change the value to False, to exit the main loop
-                running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_w and not done:
-                    done = game.take_turn()
-                    draw = True
-                    if done:
-                        print(game.board.value(game.hands))
-                if event.key == pygame.K_q:
-                    running = False
+    game.play_game(window, True)
+    print(game.board.value(game.hands))
 
 if __name__ == '__main__':
     run_graphics(mcts, minDifferenceAI)

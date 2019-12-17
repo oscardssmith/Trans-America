@@ -3,6 +3,7 @@
 import random
 import copy
 import board
+import util
 
 class Game:
     ''' class for running a single game. '''
@@ -47,8 +48,18 @@ class Game:
         """ Make a move for one player """
         return self.board.make_move(move, player)
 
-    def play_game(self):
+    def play_game(self, window=None, prompt=False):
         """ Play a whole game """
+
         while not self.board.is_terminal(self.hands):
+            if window:
+                window.draw(self.board, self.hands)
+                window.draw_turn(int((self.board.total_turns / len(self.players)) + 1),
+                                 self.board.turn + 1, self.board.tracks_left)
+
+            if prompt:
+                if not util.wait_for_key():
+                    break
+
             self.take_turn()
         return self.board.value(self.hands)
