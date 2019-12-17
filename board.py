@@ -1,17 +1,17 @@
-import mapFeatures
 import queue
+import features
 
 #stores inital costs to all cities for faster heuristics, namely [i][j][k][l] is the initial cost to get from (i,j) to (k,l). This does not update.
 costs=[]
 
 class grid:
-    def __init__(self, features,numPlayers,hubs=[]):
+    def __init__(self, numPlayers,hubs=[]):
         ''' sets up the board '''
         self.turn=0
         self.total_turns=0
         self.board=[]
         self.hubs=[]
-        self.cities=features.cities
+        self.cities=features.CITIES
         #Has 3 sets per player: Nodes within a 0 cost edge of the hub, Nodes within a 1 cost edge of the hub
         #and Nodes within a 2 cost edge of the hub, at indices [0],[1], and [2]
         self.player_nodes_in_reach=[]
@@ -25,19 +25,19 @@ class grid:
                 self.hubs.append(None)
         else:
             self.hubs=hubs
-        for i in range(0,13):
+        for i in range(0, features.LAST_ROW):
             self.board.append([])
-            for j in range(0,20):
+            for j in range(0, features.LAST_COLUMN):
                 self.board[i].append([[0,1],[1,1]])
 
-        for mountain in features.mountains:
+        for mountain in features.MOUNTAINS:
             self.set(mountain[0],mountain[1],2)
-        for ocean in features.oceans:
+        for ocean in features.OCEANS:
             for neighbor in self.get_neighbors(ocean):
                 self.set(ocean,neighbor[0],3)
-        for i in range(0,13):
+        for i in range(0, features.LAST_ROW):
             costs.append([])
-            for j in range(0,20):
+            for j in range(0, features.LAST_COLUMN):
                 costs[i].append(self.computeCosts((i,j)))
 
     #Getters and setters for an edge

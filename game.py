@@ -4,12 +4,13 @@ import random
 import copy
 import board
 import util
+import features
 
 class Game:
     ''' class for running a single game. '''
     features = None
 
-    def __init__(self, players, features, inboard=None, hands=None):
+    def __init__(self, players, inboard=None, hands=None):
         self.features = features
         self.hands = {}
         self.board = None
@@ -20,17 +21,17 @@ class Game:
             if len(player) > 2:
                 hubs.append(player[2])
         if inboard is None:
-            self.board = board.grid(features, len(players), hubs)
+            self.board = board.grid(len(players), hubs)
         else:
             self.board = inboard
         if hands is None:
-            for key in self.features.cities.keys():
+            for key in self.features.CITIES.keys():
                 values = []
-                for i in self.features.cities[key].keys():
+                for i in self.features.CITIES[key].keys():
                     values.append(i)
                 cities = random.sample(values, len(self.players))
                 for i in range(0, len(self.players)):
-                    self.hands[players[i][0]][cities[i]] = self.features.cities[key][cities[i]]
+                    self.hands[players[i][0]][cities[i]] = self.features.CITIES[key][cities[i]]
         else:
             self.hands = hands
         for i in range(0, len(self.players)):

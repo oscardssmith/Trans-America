@@ -1,7 +1,7 @@
 import pygame
 import pygame.gfxdraw
 import board
-import mapFeatures
+import features
 import math
 from math import cos, sin
 
@@ -25,14 +25,14 @@ class window:
     basis=None
     extrema=None
     scaling=None
-    def __init__(self,width,height,features,basis = ([1,0],[-0.5,math.sqrt(3)/4])):
+    def __init__(self,width,height,basis = ([1,0],[-0.5,math.sqrt(3)/4])):
         pygame.init()
         self.font=pygame.font.SysFont(None, 24)
         self.screen=pygame.display.set_mode((width,height))
         self.s=pygame.Surface((xres,yres))
         self.basis=basis
-        self.cities=features.cities
-        temp=features.corners
+        self.cities=features.CITIES
+        temp=features.CORNERS
         self.extrema=((temp[1][1]*self.basis[0][0]+temp[1][0]*self.basis[1][0],temp[1][1]*self.basis[0][1]+temp[1][0]*self.basis[1][1]),
          (temp[0][1]*self.basis[0][0]+temp[0][0]*self.basis[1][0],temp[0][1]*self.basis[0][1]+temp[0][0]*self.basis[1][1]))
         self.scaling=(self.s.get_size()[0]/abs(self.extrema[0][0]-self.extrema[1][0]),self.s.get_size()[1]/abs(self.extrema[0][1]-self.extrema[1][1]))
