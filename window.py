@@ -14,23 +14,24 @@ COLORS = {
 }
 PLAYER_COLORS = ((255, 255, 255), (0, 0, 0))
 
-XRES = 1600
-YRES = 900
 class Window:
     '''draws everything'''
     screen = None
     cities = None
-    s = None
+    surface = None
     font = None
     basis = None
     extrema = None
     scaling = None
     scaled = False
-    def __init__(self, basis=([1, 0], [-0.5, math.sqrt(3)/4])):
+    def __init__(self, width, height, scaled=False, basis=([1, 0], [-0.5, math.sqrt(3)/4])):
         pygame.init()
         self.font = pygame.font.SysFont(None, 24)
-        self.screen = pygame.display.set_mode((XRES, YRES))
-        self.surface = pygame.Surface((XRES, YRES))
+        self.width = width
+        self.height = height
+        self.scaled = scaled
+        self.screen = pygame.display.set_mode((width, height))
+        self.surface = pygame.Surface((width, height))
         self.basis = basis
         self.cities = features.CITIES
         temp = features.CORNERS
@@ -49,7 +50,8 @@ class Window:
         if not self.scaled:
             # Don't show the 'human scale' version of the board; represent it
             #  as the computer sees it
-            return (j * 70, i * 60)
+            return (j * int(self.width / (features.LAST_COLUMN + 1)),
+                    i * int((self.height - 50) / (features.LAST_ROW + 1)))
 
         return (int(self.scaling[0] * (j * self.basis[0][0] + i * self.basis[1][0] - self.extrema[1][0])), # pylint: disable=C0301
                 int(self.scaling[1] * (j * self.basis[0][1] + i * self.basis[1][1])))
@@ -123,7 +125,7 @@ class Window:
     def draw_text(self, box, hoffset):
         """ Draw text onto our surface """
         size = box.get_size()
-        dest = pygame.Rect(XRES - size[0], YRES - size[1] - hoffset, size[0], size[1])
+        dest = pygame.Rect(self.width - size[0], self.height - size[1] - hoffset, size[0], size[1])
         self.surface.blit(box, dest)
 
     def draw_turn(self, turn, player, tracks):
@@ -139,7 +141,7 @@ class Window:
             maxw = trackbox.get_size()[0]
 
         # Clear a more than large enough space
-        dest = pygame.Rect(XRES - maxw * 2, YRES - h * 3, maxw * 2, h * 3)
+        dest = pygame.Rect(self.width - maxw * 2, self.height - h * 3, maxw * 2, h * 3)
         self.surface.fill((0, 0, 0), dest)
 
         self.draw_text(turnbox, 0)
