@@ -11,7 +11,7 @@ from game import Game
 import window
 import mcts
 import minDifferenceAI
-import minTotalAI
+import simple
 
 def run_tournament(args):
     """  Run num games against several ais, printing who wins """
@@ -43,7 +43,7 @@ def run_tournament(args):
 def lookup_ai(name):
     """ Return which AI to use based on a name """
     if name == "simple":
-        return minTotalAI
+        return simple
     if name == "diff":
         return minDifferenceAI
     if name == "mcts":
