@@ -232,35 +232,11 @@ class Board:
         return neighbors
 
 
-    def low_cost_search(self, point, cutoff, minweight=0):
-        """ Lowest cost search (up to a cutoff). minweight also allows ignoring 0-cost edges. """
-        visited = []
-        for i in range(0, cutoff+1):
-            visited.append({})
-        check = queue.PriorityQueue()
-        check.put((0, (point, None)))
-        visited[0][point] = None
-        while not check.empty():
-            value, track = check.get()
-            test = track[0]
-            for neighbor in self.get_neighbors(test, minweight, 2):
-                if neighbor[1]+value <= cutoff:
-                    seen = False
-                    for i in visited:
-                        if neighbor[0] in i:
-                            seen = True
-                            break
-                    if not seen:
-                        visited[value+neighbor[1]][neighbor[0]] = test
-                        check.put(((neighbor[1]+value), (neighbor[0], test)))
-        return visited
-
     def value(self, hands):
         """ Get the value of a hand """
         for player, hand in hands.items():
             player_done = True
             for city in hand.values():
-                #visited = self.low_cost_search(city, 0)[0]
                 if city not in self.player_nodes_in_reach[player][0]:
                     player_done = False
                     break

@@ -9,8 +9,6 @@ import argparse
 import re
 from game import Game
 import window
-import mcts
-import minDifferenceAI
 import simple
 
 def run_tournament(args):
@@ -44,10 +42,6 @@ def lookup_ai(name):
     """ Return which AI to use based on a name """
     if name == "simple":
         return simple
-    if name == "diff":
-        return minDifferenceAI
-    if name == "mcts":
-        return mcts
     return False
 
 def lookup_geometry(args):
