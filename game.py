@@ -20,7 +20,7 @@ class Game:
             if len(player) > 2:
                 hubs.append(player[2])
         if inboard is None:
-            self.board = board.grid(len(players), hubs)
+            self.board = board.Board(len(players), hubs)
         else:
             self.board = inboard
         if hands is None:
