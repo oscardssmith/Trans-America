@@ -4,6 +4,7 @@ import pygame
 import pygame.gfxdraw
 import features
 
+WHITE = (255, 255, 255)
 
 COLORS = {
     'blue': (128, 128, 255),
@@ -12,6 +13,7 @@ COLORS = {
     'orange': (200, 128, 0),
     'yellow': (210, 210, 0)
 }
+
 PLAYER_COLORS = (
     (128, 128, 255),
     (0, 196, 0),
@@ -79,27 +81,32 @@ class Window:
         for color, citygroup in self.cities.items():
             for city in citygroup.values():
                 center = self.get_coords(city[0], city[1])
-                pygame.gfxdraw.aacircle(self.surface, center[0], center[1],
-                                        int(0.25*min(self.scaling)), COLORS[color])
-                pygame.gfxdraw.filled_circle(self.surface, center[0], center[1],
-                                             int(0.25*min(self.scaling)), COLORS[color])
+                radius = int(0.25 * min(self.scaling))
+                pygame.gfxdraw.aacircle(self.surface, center[0], center[1], radius, COLORS[color])
+                pygame.gfxdraw.filled_circle(self.surface, center[0], center[1], radius,
+                                             COLORS[color])
 
     def draw_player_cities(self, hands):
         """ Draw the player cities """
         for player, hand in hands.items():
             for city in hand.values():
-                pygame.draw.circle(self.surface, PLAYER_COLORS[player],
-                                   self.get_coords(city[0], city[1]),
-                                   int(0.2 * min(self.scaling)), 2)
+                radius = int(0.25 * min(self.scaling))
+                center = self.get_coords(city[0], city[1])
+                pygame.draw.circle(self.surface, WHITE, center, radius, 2)
+                box = pygame.Rect(center[0] - radius, center[1] - 1, radius * 2, 3)
+                pygame.gfxdraw.box(self.surface, box, PLAYER_COLORS[player])
 
     def draw_hubs(self, board):
         """ draw hubs if placed """
         for player, hub in enumerate(board.hubs):
             if hub is None:
                 continue
-            pygame.draw.circle(self.surface, PLAYER_COLORS[player],
-                               self.get_coords(hub[0], hub[1]),
-                               int(0.1 * min(self.scaling)))
+            radius = int(0.15 * min(self.scaling))
+            center = self.get_coords(hub[0], hub[1])
+            pygame.gfxdraw.aacircle(self.surface, center[0], center[1], radius + 1, WHITE)
+            pygame.draw.circle(self.surface, PLAYER_COLORS[player], center, radius)
+            #pygame.gfxdraw.line(self.surface, center[0] - radius, center[1] - radius,
+            #                    center[0] + radius, center[1] + radius, WHITE)
 
     def draw_thicc_line(self, point0, point1, thickness, color=(255, 255, 255)):
         ''' utility function to draw anti-aliased thick lines. '''
