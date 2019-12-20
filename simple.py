@@ -34,6 +34,11 @@ class Simple:
                 for j in range(0, self.board.size()[1]):
                     self.costs[i][j] += b.costs[city[0]][city[1]][i][j]
 
+    @staticmethod
+    def name():
+        """ Return the name of this class """
+        return "simple"
+
     def move(self, board):
         """ Figure out our move """
         #Place the hub first

@@ -42,7 +42,7 @@ def run_tournament(args, win):
 
 def lookup_ai(name):
     """ Return which AI to use based on a name """
-    if name == "simple":
+    if name == simple.Simple.name():
         return simple
     return False
 
@@ -87,6 +87,11 @@ def main():
                         help='Play a tournament of the given number of rounds.')
 
     args = parser.parse_args()
+
+    for player in args.players:
+        if not lookup_ai(player):
+            print("Error: {} is not a valid AI name.".format(player))
+            exit(1)
 
     if args.view:
         width, height = lookup_geometry(args)
