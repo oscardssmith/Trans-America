@@ -12,6 +12,7 @@ from game import Game
 import window
 import util
 import simple
+import guess
 
 def run_tournament(args, win):
     """  Run num games against several ais, printing who wins """
@@ -44,6 +45,8 @@ def lookup_ai(name):
     """ Return which AI to use based on a name """
     if name == simple.Simple.name():
         return simple
+    if name == guess.Guess.name():
+        return guess
     return False
 
 def lookup_geometry(args):
