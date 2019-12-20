@@ -17,14 +17,19 @@ import guess
 def run_tournament(args, win):
     """  Run num games against several ais, printing who wins """
     matches = list(permutations(range(0, len(args.players))))
+    scores = []
+    wins = []
+    for _ in range(0, len(args.players)):
+        scores.append(0)
+        wins.append(0)
 
     for _ in range(0, args.tournament):
         board = None
         hands = None
         for match in matches:
             players = []
-            for player in match:
-                players.append([player, lookup_ai(args.players[player])])
+            for i, player in enumerate(match):
+                players.append([i, lookup_ai(args.players[player])])
 
             game = Game(players, board, hands)
             if board is None:
@@ -33,15 +38,22 @@ def run_tournament(args, win):
                 hands = copy.deepcopy(game.hands)
 
             ret = game.play_game()
+            standings = game.board.get_totals(game.hands)
+            for i, player in enumerate(match):
+                scores[player] += standings[i]
+                if standings[i] == 0:
+                    wins[player] += 1
 
             if win:
                 win.draw(game.board, game.hands)
-                win.draw_standings(game.board.get_totals(game.hands))
+                win.draw_standings(standings)
                 if not util.wait_for_key():
                     break
                 win.clear()
 
-            print(ret)
+    print("Scores: {}".format(scores))
+    print("Wins:   {}".format(wins))
+
 
 def lookup_ai(name):
     """ Return which AI to use based on a name """
