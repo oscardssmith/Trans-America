@@ -181,6 +181,13 @@ class Window:
             left += box.get_size()[0] + 10
 
 
+    def clear(self):
+        """ Clear the whole board """
+        dest = pygame.Rect(0, 0, self.width, self.height)
+        self.surface.fill((0, 0, 0), dest)
+        self.screen.blit(self.surface, (0, 0))
+        pygame.display.update()
+
     def draw(self, board, hands):
         """ Draw the whole board """
         self.draw_lines(board)

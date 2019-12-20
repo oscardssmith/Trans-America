@@ -36,8 +36,10 @@ def run_tournament(args, win):
 
             if win:
                 win.draw(game.board, game.hands)
+                win.draw_standings(game.board.get_totals(game.hands))
                 if not util.wait_for_key():
                     break
+                win.clear()
 
             print(ret)
 
