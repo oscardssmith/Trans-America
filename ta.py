@@ -96,6 +96,7 @@ def main():
             print("Error: {} is not a valid AI name.".format(player))
             exit(1)
 
+    win = None
     if args.view:
         width, height = lookup_geometry(args)
         win = window.Window(width, height, args.scaled)
