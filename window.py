@@ -18,8 +18,9 @@ PLAYER_COLORS = (
     (128, 128, 255),
     (0, 196, 0),
     (200, 0, 0),
-    (200, 128, 0),
-    (210, 210, 0)
+    (210, 210, 0),
+    (255, 255, 255),
+    (150, 75, 0),
 )
 
 class Window:
@@ -163,6 +164,22 @@ class Window:
 
         self.screen.blit(self.surface, (0, 0))
         pygame.display.update()
+
+    def draw_standings(self, standings):
+        """ Draw the standings """
+        left = 3
+        for i, distance in enumerate(standings):
+            box = self.font.render("Player {0:1}: {1:4}".format(i + 1, distance), True,
+                                   PLAYER_COLORS[i])
+            top = self.height - box.get_size()[1] - 3
+            if left == 3:
+                dest = pygame.Rect(left, top, 6 * (box.get_size()[0] + 15), box.get_size()[1])
+                self.surface.fill((0, 0, 0), dest)
+            self.surface.blit(box, (left, top))
+            self.screen.blit(self.surface, (0, 0))
+            pygame.display.update()
+            left += box.get_size()[0] + 10
+
 
     def draw(self, board, hands):
         """ Draw the whole board """

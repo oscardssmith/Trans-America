@@ -56,6 +56,8 @@ class Game:
                 window.draw(self.board, self.hands)
                 window.draw_turn(int((self.board.total_turns / len(self.players)) + 1),
                                  self.board.turn + 1, self.board.tracks_left)
+                if self.board.total_turns > len(self.players):
+                    window.draw_standings(self.board.get_totals(self.hands))
 
             if prompt:
                 if not util.wait_for_key():
