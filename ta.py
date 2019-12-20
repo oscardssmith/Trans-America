@@ -7,36 +7,38 @@
 import copy
 import argparse
 import re
+from itertools import permutations
 from game import Game
 import window
+import util
 import simple
 
-def run_tournament(args):
+def run_tournament(args, win):
     """  Run num games against several ais, printing who wins """
-    if len(args.players) != 2:
-        print("Error: we only run 2 player tournaments right now.")
-        exit(1)
+    matches = list(permutations(range(0, len(args.players))))
 
-    ai1 = lookup_ai(args.players[0])
-    ai2 = lookup_ai(args.players[1])
-    wins = [0, 0, 0]
-    while sum(wins) < args.tournament:
-        players = [[0, ai1], [1, ai2]]
-        game = Game(players)
+    for _ in range(0, args.tournament):
+        board = None
+        hands = None
+        for match in matches:
+            players = []
+            for player in match:
+                players.append([player, lookup_ai(args.players[player])])
 
-        board = copy.deepcopy(game.board)
-        hands = copy.deepcopy(game.hands)
-        winner1 = game.play_game()
+            game = Game(players, board, hands)
+            if board is None:
+                board = copy.deepcopy(game.board)
+            if hands is None:
+                hands = copy.deepcopy(game.hands)
 
-        game2 = Game([[0, ai2], [1, ai1]], board, hands)
-        winner2 = game2.play_game()
-        if winner1 != winner2:
-            print(winner1)
-            wins[winner1] += 1
-        else:
-            print("draw")
-            wins[2] += 1
-    print(wins)
+            ret = game.play_game()
+
+            if win:
+                win.draw(game.board, game.hands)
+                if not util.wait_for_key():
+                    break
+
+            print(ret)
 
 def lookup_ai(name):
     """ Return which AI to use based on a name """
@@ -58,18 +60,12 @@ def lookup_geometry(args):
 
     return width, height
 
-def run_one(args):
+def run_one(args, win):
     """  Run a game and optionally display it graphically """
     players = []
     for i in range(0, len(args.players)):
         players.append([i, lookup_ai(args.players[i])])
     game = Game(players)
-
-    if args.view:
-        width, height = lookup_geometry(args)
-        win = window.Window(width, height, args.scaled)
-    else:
-        win = None
 
     game.play_game(win, args.wait)
 
@@ -92,10 +88,14 @@ def main():
 
     args = parser.parse_args()
 
+    if args.view:
+        width, height = lookup_geometry(args)
+        win = window.Window(width, height, args.scaled)
+
     if args.tournament:
-        run_tournament(args)
+        run_tournament(args, win)
     else:
-        run_one(args)
+        run_one(args, win)
 
 if __name__ == '__main__':
     main()
