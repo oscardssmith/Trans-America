@@ -12,7 +12,13 @@ COLORS = {
     'orange': (200, 128, 0),
     'yellow': (210, 210, 0)
 }
-PLAYER_COLORS = ((255, 255, 255), (0, 0, 0))
+PLAYER_COLORS = (
+    (128, 128, 255),
+    (0, 196, 0),
+    (200, 0, 0),
+    (200, 128, 0),
+    (210, 210, 0)
+)
 
 class Window:
     '''draws everything'''
