@@ -7,10 +7,8 @@ import features
 
 class Game:
     ''' class for running a single game. '''
-    features = None
 
     def __init__(self, players, inboard=None, hands=None):
-        self.features = features
         self.hands = {}
         self.board = None
         self.players = players
@@ -22,18 +20,18 @@ class Game:
         else:
             self.board = inboard
         if hands is None:
-            for key, citygroup in self.features.CITIES.items():
+            for key, citygroup in features.CITIES.items():
                 values = []
                 for i in iter(citygroup.keys()):
                     values.append(i)
                 cities = random.sample(values, len(self.players))
                 for i in range(0, len(self.players)):
-                    self.hands[players[i][0]][cities[i]] = self.features.CITIES[key][cities[i]]
+                    self.hands[players[i][0]][cities[i]] = features.CITIES[key][cities[i]]
         else:
             self.hands = hands
         for i in range(0, len(self.players)):
             self.players[i][1] = self.players[i][1].init(copy.deepcopy(self.board),
-                                                         self.features, self.players[i][0],
+                                                         features, self.players[i][0],
                                                          self.hands)
 
     def take_turn(self):
