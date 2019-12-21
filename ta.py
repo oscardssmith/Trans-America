@@ -37,7 +37,7 @@ def run_tournament(args, win):
             if hands is None:
                 hands = copy.deepcopy(game.hands)
 
-            ret = game.play_game()
+            game.play_game()
             standings = game.board.get_totals(game.hands)
             for i, player in enumerate(match):
                 scores[player] += standings[i]
