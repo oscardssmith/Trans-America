@@ -10,7 +10,7 @@ costs = []
 
 class Board:
     """ Track the state of a board """
-    def __init__(self, numPlayers, hubs=None):
+    def __init__(self, numPlayers):
         ''' sets up the board '''
         self.turn = 0
         self.total_turns = 0
@@ -26,11 +26,9 @@ class Board:
         self.tracks_left = 2
         for i in range(0, numPlayers):
             self.player_nodes_in_reach.append([set(), set(), set()])
-        if len(hubs) == 0:
-            for i in range(0, numPlayers):
-                self.hubs.append(None)
-        else:
-            self.hubs = hubs
+        for i in range(0, numPlayers):
+            self.hubs.append(None)
+
         for i in range(0, features.LAST_ROW):
             self.board.append([])
             for j in range(0, features.LAST_COLUMN):

@@ -17,10 +17,8 @@ class Game:
         hubs = []
         for player in self.players:
             self.hands[player[0]] = {}
-            if len(player) > 2:
-                hubs.append(player[2])
         if inboard is None:
-            self.board = board.Board(len(players), hubs)
+            self.board = board.Board(len(players))
         else:
             self.board = inboard
         if hands is None:
