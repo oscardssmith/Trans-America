@@ -8,11 +8,10 @@ import copy
 import argparse
 import re
 from itertools import permutations
+import importlib
 from game import Game
 import window
 import util
-import simple
-import guess
 
 def run_tournament(args, win):
     """  Run num games against several ais, printing who wins """
@@ -29,7 +28,7 @@ def run_tournament(args, win):
         for match in matches:
             players = []
             for i, player in enumerate(match):
-                players.append([i, lookup_ai(args.players[player])])
+                players.append(lookup_ai(args.players[player]))
 
             game = Game(players, board, hands)
             if board is None:
@@ -57,11 +56,13 @@ def run_tournament(args, win):
 
 def lookup_ai(name):
     """ Return which AI to use based on a name """
-    if name == simple.Simple.name():
-        return simple
-    if name == guess.Guess.name():
-        return guess
-    return False
+    try:
+        module = importlib.import_module(name)
+    except ImportError:
+        print("Error: {} is not a valid AI.".format(name))
+        exit(1)
+
+    return module.create()
 
 def lookup_geometry(args):
     """ Parse a --geometry stanza """
@@ -81,7 +82,7 @@ def run_one(args, win):
     """  Run a game and optionally display it graphically """
     players = []
     for i in range(0, len(args.players)):
-        players.append([i, lookup_ai(args.players[i])])
+        players.append(lookup_ai(args.players[i]))
     game = Game(players)
 
     game.play_game(win, args.wait)
@@ -104,11 +105,6 @@ def main():
                         help='Play a tournament of the given number of rounds.')
 
     args = parser.parse_args()
-
-    for player in args.players:
-        if not lookup_ai(player):
-            print("Error: {} is not a valid AI name.".format(player))
-            exit(1)
 
     win = None
     if args.view:

@@ -13,7 +13,6 @@ class Board:
     def __init__(self, numPlayers):
         ''' sets up the board '''
         self.turn = 0
-        self.total_turns = 0
         self.board = []
         self.hubs = []
         self.cities = features.CITIES
@@ -99,17 +98,15 @@ class Board:
                         break
         return moves
 
-    def make_move(self, move, player, update=True):
+    def make_move(self, move, turn, player, update=True):
         """ Record a move by a player """
-        if self.turn != player:
-            raise Exception("Stop It")
         if self.hubs[player] is None:
             self.hubs[player] = move
             reachable = self.get_neighbors(move)
             self.player_nodes_in_reach[player][0].add(move)
             for i in range(0, len(reachable)):
                 self.player_nodes_in_reach[player][reachable[i][1]].add(reachable[i][0])
-            self.next_turn(2)
+            cost = 2
 
             #Compute relevant distances for this hub placement
             if update:
@@ -126,9 +123,9 @@ class Board:
                     self.distances_left[j][move] = costs[move[0]][move[1]][hub[0]][hub[1]]
 
 
-            return True
+            return cost
+
         cost = self.cost(move[0], move[1])
-        self.next_turn(cost)
         self.set(move[0], move[1], 0)
         for track in move:
             if track not in self.player_nodes_in_reach[player][0]:
@@ -198,7 +195,7 @@ class Board:
                     self.player_nodes_in_reach[player][2].difference_update(self.player_nodes_in_reach[player][1])
                     self.player_nodes_in_reach[player][2].difference_update(self.player_nodes_in_reach[player][0])
                     self.player_nodes_in_reach[player][1].difference_update(self.player_nodes_in_reach[player][0])
-        return True
+        return cost
 
     def get_neighbors(self, point, mincost=1, maxcost=2):
         """ Returns neighors with cost between mincost and maxcost of a given node """
@@ -232,7 +229,7 @@ class Board:
 
     def value(self, hands):
         """ Get the value of a hand """
-        for player, hand in hands.items():
+        for player, hand in enumerate(hands):
             player_done = True
             for city in hand.values():
                 if city not in self.player_nodes_in_reach[player][0]:
@@ -271,18 +268,8 @@ class Board:
     def get_totals(self, hands):
         """ Get total distance to go """
         totals = []
-        for i in hands.keys():
+        for i in range(0, len(hands)):
             totals.append(0)
             for city in hands[i].values():
                 totals[i] += self.distances_left[i][city]
         return totals
-
-    def next_turn(self, tracks):
-        ''' Changes the turn to the next player. Not trivial because each track is a move'''
-        if self.tracks_left-tracks == 0:
-            self.turn += 1
-            self.turn = self.turn % len(self.hubs)
-            self.tracks_left = 2
-            self.total_turns += 1
-        else:
-            self.tracks_left = self.tracks_left-tracks

@@ -89,7 +89,7 @@ class Window:
 
     def draw_player_cities(self, hands):
         """ Draw the player cities """
-        for player, hand in hands.items():
+        for player, hand in enumerate(hands):
             for city in hand.values():
                 radius = int(0.25 * min(self.scaling))
                 center = self.get_coords(city[0], city[1])
