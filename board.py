@@ -150,7 +150,7 @@ class Board:
                             if self.distances_left[j][self.hubs[player]]+self.distances_left[player][self.hubs[i]] < self.distances_left[j][self.hubs[i]]:
                                 self.distances_left[j][self.hubs[i]] = self.distances_left[j][self.hubs[player]]+self.distances_left[player][self.hubs[i]]
                             if self.distances_left[i][self.hubs[player]]+self.distances_left[player][self.hubs[j]] < self.distances_left[i][self.hubs[j]]:
-                                self.distances_left[i][self.hubs[i]] = self.distances_left[i][self.hubs[player]]+self.distances_left[player][self.hubs[j]]
+                                self.distances_left[i][self.hubs[j]] = self.distances_left[i][self.hubs[player]]+self.distances_left[player][self.hubs[j]]
                         for city in self.cities.values():
                             for location in city.values():
                                 if self.distances_left[i][location] > self.distances_left[player][location]+self.distances_left[i][self.hubs[player]]:
