@@ -5,7 +5,7 @@ import features
 
 #stores inital costs to all cities for faster heuristics,
 # namely [i][j][k][l] is the initial cost to get from (i,j) to (k,l).
-# This does not update.
+# This is static.
 costs = []
 
 class Board:
@@ -246,7 +246,7 @@ class Board:
         return True
 
     def compute_costs(self, point):
-        ''' Computes costs to everywhere using BFS. Stores results in costs'''
+        ''' Computes costs to a point using BFS '''
         out = []
         for _ in range(0, self.size()[0]):
             temp = []
