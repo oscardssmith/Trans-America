@@ -1,2 +1,1 @@
-- Make a base AI class that must be extended
-- Profile with python3 -m cProfile -s tottime ./ta.py guess guess --tournament 2
+- Profile with python3 -m cProfile -s tottime ./ta.py [args]

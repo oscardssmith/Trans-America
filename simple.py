@@ -1,6 +1,7 @@
 """ Simple AI.  Just place the track that reduces total cost to cities """
 import copy
 import features
+from template import Template
 from state import ALL
 
 
@@ -9,26 +10,17 @@ def create():
     """ Return an AI """
     return Simple()
 
-class Simple:
+class Simple(Template):
     """ A class to hold the simple minimum total AI algorithm """
 
     def __init__(self):
-        self.num = None
-        self.player_count = 0
-        self.hand = None
-        self.hub = None
-        self.board = None
+        super().__init__()
         self.cities = []
         self.costs = []
 
     def start(self, num, player_count, board, hand):
         """ Construct a simple AI.  Can return a list of features not wanted """
-        self.num = num
-        self.player_count = player_count
-        self.hand = hand
-        self.board = board
-        self.cities = []
-        self.costs = []
+        super().start(num, player_count, board, hand)
 
         #Need to compute initial totals for each possible hub placement.
         for city in self.hand.values():
@@ -76,9 +68,3 @@ class Simple:
             if sum(values[i]) < sum(values[best_move]):
                 best_move = i
         return possible_moves[best_move]
-
-    def see_hub(self, num, move):
-        """ Receive a hub placement made by a player """
-
-    def see_move(self, num, move):
-        """ Receive a move made by a player """

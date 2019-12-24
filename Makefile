@@ -1,4 +1,4 @@
 .PHONY: lint
 
-lint: ta.py game.py util.py features.py window.py guess.py state.py board.py simple.py
+lint: ta.py game.py util.py features.py window.py state.py board.py template.py simple.py guess.py
 	pylint3 --good-names=i,j,k,h,w --max-attributes=10 --max-locals=17 --extension-pkg-whitelist=pygame $^
