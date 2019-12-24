@@ -49,8 +49,9 @@ class State:
                 self.add_one_point(mover, move)
             return
 
-        self.add_one_point(mover, move[0])
-        self.add_one_point(mover, move[1])
+        if self.desired_states & POINTS:
+            self.add_one_point(mover, move[0])
+            self.add_one_point(mover, move[1])
 
         if self.desired_states & TRACKS:
             self.add_track(move[0], move[1])
