@@ -53,7 +53,7 @@ CITIES = {'green':  {'Seatle': (0, 0),
                      'New Orleans': (12, 16)}}
 
 
-MOUNTAINS = [
+MOUNTAINS_AND_RIVERS = [
     ((0, 0), (0, 1)),
     #Rockies
     ((0, 0), (1, 1)),

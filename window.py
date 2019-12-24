@@ -67,9 +67,9 @@ class Window:
 
     def draw_lines(self, board):
         """ Draw the lines """
-        for i in range(0, board.size()[0]):
-            for j in range(0, board.size()[1]):
-                for point in board.get_neighbors((i, j), 0, 2):
+        for i in range(0, board.rows):
+            for j in range(0, board.cols):
+                for point in board.get_neighbors((i, j), 1, 2):
                     point1 = self.get_coords(point[0][0], point[0][1])
                     point2 = self.get_coords(i, j)
                     color = (128, 128, 128)
@@ -97,9 +97,9 @@ class Window:
                 box = pygame.Rect(center[0] - radius, center[1] - 1, radius * 2, 3)
                 pygame.gfxdraw.box(self.surface, box, PLAYER_COLORS[player])
 
-    def draw_hubs(self, board):
+    def draw_hubs(self, hubs):
         """ draw hubs if placed """
-        for player, hub in enumerate(board.hubs):
+        for player, hub in enumerate(hubs):
             if hub is None:
                 continue
             radius = int(0.15 * min(self.scaling))
@@ -130,11 +130,22 @@ class Window:
                center_y - hthick *cangle + hlength*sangle)
         btr = (center_x - hlength*cangle + hthick *sangle,
                center_y - hthick *cangle - hlength*sangle)
+
+        #  For some reason, drawing this twice seems to fill in lines better
         pygame.gfxdraw.aapolygon(self.surface, (upl, upr, btr, btl), color)
+        pygame.gfxdraw.aapolygon(self.surface, (upl, upr, btr, btl), color)
+
         #if not a double cost location, fill in the line
         if thickness != 8:
             pygame.gfxdraw.filled_polygon(self.surface, (upl, upr, btr, btl), color)
 
+    def draw_move(self, move):
+        """ Draw one move """
+        point1 = self.get_coords(move[0][0], move[0][1])
+        point2 = self.get_coords(move[1][0], move[1][1])
+        self.draw_thicc_line(point1, point2, 6)
+        self.screen.blit(self.surface, (0, 0))
+        pygame.display.update()
 
     def draw_text(self, box, hoffset):
         """ Draw text onto our surface """
@@ -188,12 +199,11 @@ class Window:
         self.screen.blit(self.surface, (0, 0))
         pygame.display.update()
 
-    def draw(self, board, hands):
+    def draw_initial(self, board, hands):
         """ Draw the whole board """
         self.draw_lines(board)
         self.draw_cities()
         self.draw_player_cities(hands)
-        self.draw_hubs(board)
 
         self.screen.blit(self.surface, (0, 0))
         pygame.display.update()

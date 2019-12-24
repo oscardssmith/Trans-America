@@ -10,10 +10,11 @@ import re
 from itertools import permutations
 import importlib
 from game import Game
+from board import Board
 import window
 import util
 
-def run_tournament(args, win):
+def run_tournament(args, board, win):
     """  Run num games against several ais, printing who wins """
     matches = list(permutations(range(0, len(args.players))))
     scores = []
@@ -23,34 +24,34 @@ def run_tournament(args, win):
         wins.append(0)
 
     for _ in range(0, args.tournament):
-        board = None
         hands = None
         for match in matches:
             players = []
-            for i, player in enumerate(match):
+            for _, player in enumerate(match):
                 players.append(lookup_ai(args.players[player]))
 
-            game = Game(players, board, hands)
-            if board is None:
-                board = copy.deepcopy(game.board)
+            game = Game(players, board, None, hands)
             if hands is None:
                 hands = copy.deepcopy(game.hands)
 
             game.play_game()
-            standings = game.board.get_totals(game.hands)
-            for i, player in enumerate(match):
-                scores[player] += standings[i]
-                if standings[i] == 0:
+            #standings = game.board.get_totals(game.hands)
+            for _, player in enumerate(match):
+                #scores[player] += standings[i]
+                if game.player_done(player):
                     wins[player] += 1
 
             if win:
-                win.draw(game.board, game.hands)
-                win.draw_standings(standings)
+                win.draw_initial(game.board, game.hands)
+                win.draw_hubs(game.hubs)
+                for track in game.tracks:
+                    win.draw_move(track)
+                #win.draw_standings(standings)
                 if not util.wait_for_key():
                     break
                 win.clear()
 
-    print("Scores: {}".format(scores))
+    #print("Scores: {}".format(scores))
     print("Wins:   {}".format(wins))
 
 
@@ -78,14 +79,14 @@ def lookup_geometry(args):
 
     return width, height
 
-def run_one(args, win):
+def run_one(args, board, win):
     """  Run a game and optionally display it graphically """
     players = []
     for i in range(0, len(args.players)):
         players.append(lookup_ai(args.players[i]))
-    game = Game(players)
+    game = Game(players, board, win)
 
-    game.play_game(win, args.wait)
+    game.play_game(args.wait)
 
 def main():
     """ Run the main program """
@@ -106,15 +107,17 @@ def main():
 
     args = parser.parse_args()
 
+    board = Board()
+
     win = None
     if args.view:
         width, height = lookup_geometry(args)
         win = window.Window(width, height, args.scaled)
 
     if args.tournament:
-        run_tournament(args, win)
+        run_tournament(args, board, win)
     else:
-        run_one(args, win)
+        run_one(args, board, win)
 
 if __name__ == '__main__':
     main()

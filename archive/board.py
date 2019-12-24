@@ -33,7 +33,7 @@ class Board:
             for j in range(0, features.LAST_COLUMN):
                 self.board[i].append([[0, 1], [1, 1]])
 
-        for mountain in features.MOUNTAINS:
+        for mountain in features.MOUNTAINS_AND_RIVERS:
             self.set(mountain[0], mountain[1], 2)
         for ocean in features.OCEANS:
             for neighbor in self.get_neighbors(ocean):
