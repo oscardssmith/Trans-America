@@ -134,3 +134,9 @@ class Game:
                     break
 
             self.take_turn()
+
+        if self.window:
+            if self.state.desired_states & SELECT:
+                standings = self.state.get_totals(self.hands)
+                self.window.draw_standings(standings)
+            util.wait_for_key()
