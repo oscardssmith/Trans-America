@@ -2,7 +2,7 @@
 import random
 import util
 import features
-from state import State
+from state import State, SELECT
 
 class Game:
     ''' class for running a single game. '''
@@ -67,17 +67,28 @@ class Game:
 
     def is_terminal(self):
         """ Helper function to determine if any player has finished """
+        if self.state.desired_states & SELECT:
+            return self.state.is_terminal(self.hands)
+
         for player in range(0, len(self.players)):
             if self.player_done(player):
                 return True
         return False
 
+
+    def record_hub(self, mover, move):
+        """ Record a hub placement by a player """
+        for player in self.players:
+            player.see_hub(mover, move)
+
+        if self.state:
+            self.state.record_hub(mover, move)
+
     def record_move(self, mover, move):
         """ Record the move that just happened """
-        if not isinstance(move[0], int):
-            self.tracks.append(move)
-            if self.window:
-                self.window.draw_move(move)
+        self.tracks.append(move)
+        if self.window:
+            self.window.draw_move(move)
 
         for player in self.players:
             player.see_move(mover, move)
@@ -90,16 +101,17 @@ class Game:
         player = self.turn % len(self.players)
         if self.turn < len(self.players):
             move = self.players[player].place_hub(self.board, self.state)
+            self.record_hub(player, move)
             self.hubs[player] = move
             self.turn += 1
         else:
             move = self.players[player].move(self.board, self.tracks_left, self.state)
             cost = self.board.costs[move[0][0]][move[0][1]][move[1][0]][move[1][1]]
             self.tracks_left -= cost
+            self.record_move(player, move)
             if self.tracks_left == 0:
                 self.tracks_left = 2
                 self.turn += 1
-        self.record_move(player, move)
 
     def play_game(self, prompt=False):
         """ Play a whole game """

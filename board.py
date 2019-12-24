@@ -24,6 +24,7 @@ class Board:
         self.oceans = features.OCEANS
         self.cols = features.LAST_COLUMN
         self.rows = features.LAST_ROW
+        self.cities = features.CITIES
         self.costs = []
 
         # Set up default costs

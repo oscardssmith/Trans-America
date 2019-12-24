@@ -11,6 +11,7 @@ from itertools import permutations
 import importlib
 from game import Game
 from board import Board
+from state import SELECT
 import window
 import util
 
@@ -35,10 +36,12 @@ def run_tournament(args, board, win):
                 hands = copy.deepcopy(game.hands)
 
             game.play_game()
-            #standings = game.board.get_totals(game.hands)
-            for _, player in enumerate(match):
-                #scores[player] += standings[i]
-                if game.player_done(player):
+            if game.state.desired_states & SELECT:
+                standings = game.state.get_totals(game.hands)
+            for i, player in enumerate(match):
+                if game.state.desired_states & SELECT:
+                    scores[player] += standings[i]
+                if game.player_done(i):
                     wins[player] += 1
 
             if win:
@@ -46,12 +49,14 @@ def run_tournament(args, board, win):
                 win.draw_hubs(game.hubs)
                 for track in game.tracks:
                     win.draw_move(track)
-                #win.draw_standings(standings)
+                if game.state.desired_states & SELECT:
+                    win.draw_standings(standings)
                 if not util.wait_for_key():
                     break
                 win.clear()
 
-    #print("Scores: {}".format(scores))
+    if game.state.desired_states & SELECT:
+        print("Scores: {}".format(scores))
     print("Wins:   {}".format(wins))
 
 

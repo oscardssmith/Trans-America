@@ -1,6 +1,6 @@
 """ Stupid AI.  Just place track randomly """
 import random
-from state import ALL
+from state import POINTS, TRACKS
 
 def create():
     """ Return an AI """
@@ -23,7 +23,7 @@ class Guess:
         self.hand = hand
         self.board = board
         self.hub = None
-        return ALL
+        return POINTS|TRACKS
 
     def place_hub(self, board, state): # pylint: disable=W0613
         """ Return where we want out hub """
@@ -44,6 +44,9 @@ class Guess:
         possible_moves = list(state.legal_moves(self.num, 1, tracks_left))
         move = random.randint(0, len(possible_moves) - 1)
         return possible_moves[move]
+
+    def see_hub(self, num, move):
+        """ Receive a hub placement made by a player """
 
     def see_move(self, num, move):
         """ Receive a move made by a player """
