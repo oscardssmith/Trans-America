@@ -2,7 +2,7 @@
 import pygame
 import sys
 from template import Template
-from state import POINTS
+from state import ALL
 import util
 
 def create():
@@ -15,7 +15,7 @@ class Human(Template):
     def start(self, num, player_count, board, hand):
         """ Construct our AI """
         super().start(num, player_count, board, hand)
-        return POINTS
+        return ALL
 
     def place_hub(self, board, state): # pylint: disable=W0613
         """ Return where we want out hub """
@@ -36,17 +36,30 @@ class Human(Template):
             if not okay:
                 state.window.draw_prompt("Invalid hub location")
 
-        return (row, col)
+        self.hub = (row, col)
+        return self.hub
 
     def move(self, board, tracks_left, state):
         """ Figure out our move """
-        state.window.draw_prompt("Click start and end of track")
+        state.window.draw_prompt("Place track with mouse click")
+        moves = state.fast_get_moves(self.hub, tracks_left)
         while True:
             click = util.wait_for_click()
             point1 = state.window.invert_coords(click[0], click[1])
+            singlet = None
+            for move in moves:
+                if point1 == move[0] or point1 == move[1]:
+                    if singlet:
+                        state.window.draw_prompt("Ambiguous move; click another point.")
+                        singlet = None
+                        break
+                    singlet = move
+
+            if singlet:
+                return singlet
+
             click = util.wait_for_click()
             point2 = state.window.invert_coords(click[0], click[1])
-            moves = state.legal_moves(self.num, 1, tracks_left)
             for move in moves:
                 if (point1 == move[0] and point2 == move[1] or \
                     point1 == move[1] and point2 == move[0]):
