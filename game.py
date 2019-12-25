@@ -2,6 +2,7 @@
 import random
 import util
 import features
+from human import Human
 from state import State, SELECT
 
 class Game:
@@ -28,7 +29,7 @@ class Game:
             states_wanted |= player.start(i, len(self.players), board, self.hands[i])
 
         if states_wanted:
-            self.state = State(states_wanted, board, len(self.players))
+            self.state = State(states_wanted, board, len(self.players), window)
 
 
     def make_hands(self, players):
@@ -115,28 +116,32 @@ class Game:
 
     def play_game(self, prompt=False):
         """ Play a whole game """
+        quitting = False
         if self.window:
             self.window.draw_initial(self.board, self.hands)
 
         while not self.is_terminal():
+            player = self.turn % len(self.players)
             if self.window:
+                if prompt and not isinstance(self.players[player], Human):
+                    self.window.draw_prompt("Press w to proceed, q to quit")
                 if self.turn <= len(self.players):
                     self.window.draw_hubs(self.hubs)
 
-                player = self.turn % len(self.players)
                 self.window.draw_turn(self.turn + 1, player + 1, self.tracks_left)
 
-                #if self.board.turn >= len(self.players):
-                #    window.draw_standings(self.board.get_totals(self.hands))
-
-            if prompt:
+            if prompt and not isinstance(self.players[player], Human):
                 if not util.wait_for_key():
+                    quitting = True
                     break
 
             self.take_turn()
 
-        if self.window:
-            if self.state.desired_states & SELECT:
-                standings = self.state.get_totals(self.hands)
-                self.window.draw_standings(standings)
+            if self.window:
+                if self.turn >= len(self.players):
+                    if self.state.desired_states & SELECT:
+                        standings = self.state.get_totals(self.hands)
+                        self.window.draw_standings(standings)
+
+        if self.window and not quitting:
             util.wait_for_key()

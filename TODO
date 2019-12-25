@@ -1,1 +1,3 @@
 - Profile with python3 -m cProfile -s tottime ./ta.py [args]
+- Make an overlord which calls run_tournament and returns a score
+- Validate human hub placement

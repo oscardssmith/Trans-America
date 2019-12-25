@@ -16,12 +16,13 @@ class State:
       in this module can disable those computations.
 
     """
-    def __init__(self, desired, board, num_players):
+    def __init__(self, desired, board, num_players, window=None):
         """ Constructs the game state """
         self.board = board
         self.desired_states = desired
         self.num_players = num_players
         self.hubs = []
+        self.window = window
 
         if self.desired_states & POINTS:
             self.points = []

@@ -13,3 +13,10 @@ def wait_for_key():
                     return True
                 if event.key == pygame.K_q:
                     return False
+
+def wait_for_click():
+    """ Wait for a mouse click """
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONUP:
+                return event.pos

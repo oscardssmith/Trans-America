@@ -65,6 +65,16 @@ class Window:
         return (int(self.scaling[0] * (j * self.basis[0][0] + i * self.basis[1][0] - self.extrema[1][0])), # pylint: disable=C0301
                 int(self.scaling[1] * (j * self.basis[0][1] + i * self.basis[1][1])))
 
+    def invert_coords(self, x, y):
+        '''screen coords to row, col point '''
+        if not self.scaled:
+            # Don't show the 'human scale' version of the board; represent it
+            #  as the computer sees it
+            return (int(y / int((self.height - 50)  / (features.LAST_ROW + 1)) + 0.25) - 1,
+                    int(x / int(self.width / (features.LAST_COLUMN + 1)) + 0.25) - 1)
+        # TODO - handle scaled inversion...
+        return (0, 0)
+
     def draw_lines(self, board):
         """ Draw the lines """
         for i in range(0, board.rows):
@@ -191,6 +201,16 @@ class Window:
             pygame.display.update()
             left += box.get_size()[0] + 10
 
+    def draw_prompt(self, prompt):
+        left = 3
+        box = self.font.render("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", True, WHITE)
+        top = self.height - 2 * (box.get_size()[1] + 5)
+        dest = pygame.Rect(left, top, box.get_size()[0], box.get_size()[1])
+        self.surface.fill((0, 0, 0), dest)
+        box = self.font.render(prompt, True, WHITE)
+        self.surface.blit(box, (left, top))
+        self.screen.blit(self.surface, (0, 0))
+        pygame.display.update()
 
     def clear(self):
         """ Clear the whole board """
