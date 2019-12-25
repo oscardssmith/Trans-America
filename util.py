@@ -1,4 +1,5 @@
 """ util.py contains various utility routines for Trans America """
+import sys
 import pygame
 
 def wait_for_key():
@@ -20,3 +21,7 @@ def wait_for_click():
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONUP:
                 return event.pos
+            if event.type == pygame.QUIT:
+                sys.exit(0)
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
+                sys.exit(0)

@@ -72,8 +72,13 @@ class Window:
             #  as the computer sees it
             return (int(y / int((self.height - 50)  / (features.LAST_ROW + 1)) + 0.25) - 1,
                     int(x / int(self.width / (features.LAST_COLUMN + 1)) + 0.25) - 1)
-        # TODO - handle scaled inversion...
-        return (0, 0)
+
+        row1 = (y / self.scaling[1] - \
+               ((self.basis[0][1] * x) / self.basis[0][0] * self.scaling[0])) / \
+               (self.basis[1][1] - (self.basis[0][1] * self.basis[1][1]) / self.basis[0][0])
+        col1 = ((x / self.scaling[0]) - row1 * self.basis[1][0] + self.extrema[1][0]) / \
+               self.basis[0][0]
+        return (int(row1 + 0.25) - 1, int(col1 + 0.25) - 1)
 
     def draw_lines(self, board):
         """ Draw the lines """
@@ -202,6 +207,7 @@ class Window:
             left += box.get_size()[0] + 10
 
     def draw_prompt(self, prompt):
+        """ Draw a text prompt """
         left = 3
         box = self.font.render("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", True, WHITE)
         top = self.height - 2 * (box.get_size()[1] + 5)

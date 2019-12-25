@@ -20,8 +20,23 @@ class Human(Template):
     def place_hub(self, board, state): # pylint: disable=W0613
         """ Return where we want out hub """
         state.window.draw_prompt("Click to place hub")
-        click = util.wait_for_click()
-        return state.window.invert_coords(click[0], click[1])
+        okay = False
+        while not okay:
+            click = util.wait_for_click()
+            (row, col) = state.window.invert_coords(click[0], click[1])
+            okay = True
+            if row < 0 or row >= board.rows:
+                okay = False
+            if col < 0 or col >= board.cols:
+                okay = False
+            for ocean in board.oceans:
+                if row == ocean[0] and col == ocean[1]:
+                    okay = False
+                    break
+            if not okay:
+                state.window.draw_prompt("Invalid hub location")
+
+        return (row, col)
 
     def move(self, board, tracks_left, state):
         """ Figure out our move """
