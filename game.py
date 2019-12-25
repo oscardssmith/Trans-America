@@ -128,7 +128,8 @@ class Game:
                 if self.turn <= len(self.players):
                     self.window.draw_hubs(self.hubs)
 
-                self.window.draw_turn(self.turn + 1, player + 1, self.tracks_left)
+                self.window.draw_turn(int(self.turn / len(self.players)) + 1,
+                                      player + 1, self.tracks_left)
 
             if prompt and not isinstance(self.players[player], Human):
                 if not util.wait_for_key():

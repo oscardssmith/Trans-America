@@ -1,5 +1,6 @@
 - Profile with python3 -m cProfile -s tottime ./ta.py [args]
 - Make an overlord which calls run_tournament and returns a score
 - Legal moves does not allow for moves by other players
-- Make turn # not go up so fast
-- Draw fog of war
+- Draw fog of war (i.e. only human players, and no standings)
+- Figure out how to deepcopy state without copying board
+- Human: Detect a bad first click and complain
