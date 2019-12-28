@@ -117,8 +117,18 @@ class Game:
     def play_game(self, prompt=False):
         """ Play a whole game """
         quitting = False
+        human = False
+        hands = []
+
+        for i, player in enumerate(self.players):
+            if isinstance(player, Human):
+                hands.append(self.hands[i])
+                human = True
+        if not human:
+            hands = self.hands
+
         if self.window:
-            self.window.draw_initial(self.board, self.hands)
+            self.window.draw_initial(self.board, hands)
 
         while not self.is_terminal():
             player = self.turn % len(self.players)
@@ -145,4 +155,6 @@ class Game:
                         self.window.draw_standings(standings)
 
         if self.window and not quitting:
+            self.window.draw_initial(self.board, self.hands)
+            self.window.draw_prompt("Game over.  Press q to quit.")
             util.wait_for_key()
