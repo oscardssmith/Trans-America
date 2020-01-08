@@ -2,10 +2,10 @@ from copy import copy, deepcopy
 from math import sqrt
 import math
 import random
+from util import eval_move #used for fpu
 
 # This mcts code is way ugly because you sometimes place 2 tracks -> make 2 moves in a row, so backprop
 # gets really nasty
-from minDifferenceAI import eval_move #used for fpu
 
 UCB_CONST = .75
 hands = None

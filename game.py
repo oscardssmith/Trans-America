@@ -1,101 +1,160 @@
-import board
-import mapFeatures
+""" game.py contains Game control logic for Trans-America """
 import random
-import mcts
-import minTotalAI
-import minDifferenceAI
-import copy
-import graphics
-import pygame
+import util
+import features
+from human import Human
+from state import State, SELECT
 
-class game:
-    ''' class for runnign a single game. '''
-    features=None
+class Game:
+    ''' class for running a single game. '''
 
-    def __init__(self,players,features, inboard=None,hands=None):
-        self.features=features
-        self.hands={}
-        self.board=None
-        self.players=players
-        hubs=[]
-        for player in self.players:
-            self.hands[player[0]]={}
-            if(len(player)>2):
-                hubs.append(player[2])
-        if(inboard==None):
-            self.board=board.grid(mapFeatures,len(players),hubs)
+    def __init__(self, players, board, window=None, hands=None):
+        self.board = board
+        self.turn = 0
+        self.tracks_left = 2
+        self.players = players
+        self.hubs = []
+        self.tracks = []
+        self.window = window
+        self.state = None
+
+        if hands is None:
+            self.hands = self.make_hands(players)
         else:
-            self.board=inboard
-        for key in self.features.cities.keys():
-            values=[]
-            for i in self.features.cities[key].keys():
+            self.hands = hands
+
+        states_wanted = 0
+        for i, player in enumerate(self.players):
+            self.hubs.append(None)
+            states_wanted |= player.start(i, len(self.players), board, self.hands[i])
+
+        if states_wanted:
+            self.state = State(states_wanted, board, len(self.players), window)
+
+
+    def make_hands(self, players):
+        """ Create a new set of hands """
+        hands = []
+        for i in range(0, len(players)):
+            hands.append({})
+        for key, citygroup in features.CITIES.items():
+            values = []
+            for i in iter(citygroup.keys()):
                 values.append(i)
-            cities=random.sample(values,len(self.players))
-            for i in range(0,len(self.players)):
-                self.hands[players[i][0]][cities[i]]=self.features.cities[key][cities[i]]
-        for i in range(0,len(self.players)):
-            self.players[i][1]=self.players[i][1].init(copy.deepcopy(self.board),self.features,self.players[i][0],self.hands)
-    
+            cities = random.sample(values, len(self.players))
+            for i in range(0, len(self.players)):
+                hands[i][key] = features.CITIES[key][cities[i]]
+        return hands
+
+    def track_is_city(self, track, city):
+        """ Helper function to determine if a track connects a city """
+        if isinstance(track[0], int):
+            return track[0] == city[0] and track[1] == city[1]
+
+        return self.track_is_city(track[0], city) or self.track_is_city(track[1], city)
+
+    def player_done(self, player):
+        """ Helper function to determine if a player has reached their cities """
+        for i in self.hands[player]:
+            found = False
+            city = self.hands[player][i]
+            for track in self.tracks:
+                if self.track_is_city(track, city):
+                    found = True
+                    break
+            if not found:
+                return False
+        return True
+
+    def is_terminal(self):
+        """ Helper function to determine if any player has finished """
+        if self.state.desired_states & SELECT:
+            return self.state.is_terminal(self.hands)
+
+        for player in range(0, len(self.players)):
+            if self.player_done(player):
+                return True
+        return False
+
+
+    def record_hub(self, mover, move):
+        """ Record a hub placement by a player """
+        for player in self.players:
+            player.see_hub(mover, move)
+
+        if self.state:
+            self.state.record_hub(mover, move)
+
+    def record_move(self, mover, move):
+        """ Record the move that just happened """
+        self.tracks.append(move)
+        if self.window:
+            self.window.draw_move(move)
+
+        for player in self.players:
+            player.see_move(mover, move)
+            if self.state:
+                self.state.record_move(mover, move)
+
+
     def take_turn(self):
-        move=self.players[self.board.turn][1].move(copy.deepcopy(self.board))
-        self.board.make_move(move, self.board.turn)
-        return self.board.is_terminal(self.hands)
-        
-    def make_move(self, move, player):
-        return self.board.make_move(move, player)
-
-    def play_game(self):
-        while not self.board.is_terminal(self.hands):
-            self.take_turn()
-        return self.board.value(self.hands)
-
-def run_tournament(num, ai1, ai2):
-    wins=[0,0,0]
-    while(sum(wins)<num):
-        players = [[0,ai1],[1,ai2]]
-        g = game(players,mapFeatures)
-
-        gBoard = copy.deepcopy(g.board)
-        hands2 = copy.deepcopy(g.hands)
-        winner1 = g.play_game()
-
-        g2 = game([[0,ai2],[1,ai1]],mapFeatures,gBoard,hands2)
-        winner2 =g2.play_game()
-        if winner1 != winner2:
-            print(winner1)
-            wins[winner1]+=1
+        """ Take exactly one turn """
+        player = self.turn % len(self.players)
+        if self.turn < len(self.players):
+            move = self.players[player].place_hub(self.board, self.state)
+            self.record_hub(player, move)
+            self.hubs[player] = move
+            self.turn += 1
         else:
-            print("draw")
-            wins[2]+=1
-    print(wins)
+            move = self.players[player].move(self.board, self.tracks_left, self.state)
+            cost = self.board.costs[move[0][0]][move[0][1]][move[1][0]][move[1][1]]
+            self.tracks_left -= cost
+            self.record_move(player, move)
+            if self.tracks_left == 0:
+                self.tracks_left = 2
+                self.turn += 1
 
-def run_graphics(ai1, ai2):
-    players=[[0,ai1],[1,ai2]]
-    g=game(players,mapFeatures)
-    
-    w = graphics.window(graphics.xres,graphics.yres,mapFeatures)
-    grid=g.board
+    def play_game(self, prompt=False):
+        """ Play a whole game """
+        quitting = False
+        human = False
+        hands = []
 
-    running = True
-    done = False
-    # main loop
-    while running:
-        # event handling, gets all event from the event queue
-        for event in pygame.event.get():
-            # only do something if the event is of type QUIT
-            if event.type == pygame.QUIT:
-                # change the value to False, to exit the main loop
-                running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_w and not done:
-                    done=g.take_turn()
-                    if done:
-                        print(g.board.value(g.hands))
-                if event.key == pygame.K_q:
-                    running = False
-        w.draw(g.board, g.hands)
+        for i, player in enumerate(self.players):
+            if isinstance(player, Human):
+                hands.append(self.hands[i])
+                human = True
+        if not human:
+            hands = self.hands
 
-if __name__ == '__main__':
-    run_graphics(mcts, minDifferenceAI)
-    #run_graphics(minTotalAI, minDifferenceAI)
-    #run_tournament(100, mcts, minDifferenceAI)
+        if self.window:
+            self.window.draw_initial(self.board, hands)
+
+        while not self.is_terminal():
+            player = self.turn % len(self.players)
+            if self.window:
+                if prompt and not isinstance(self.players[player], Human):
+                    self.window.draw_prompt("Press w to proceed, q to quit")
+                if self.turn <= len(self.players):
+                    self.window.draw_hubs(self.hubs)
+
+                self.window.draw_turn(int(self.turn / len(self.players)) + 1,
+                                      player + 1, self.tracks_left)
+
+            if prompt and not isinstance(self.players[player], Human):
+                if not util.wait_for_key():
+                    quitting = True
+                    break
+
+            self.take_turn()
+
+            if self.window:
+                if self.turn >= len(self.players):
+                    if self.state.desired_states & SELECT:
+                        standings = self.state.get_totals(self.hands)
+                        self.window.draw_standings(standings)
+
+        if self.window and not quitting:
+            self.window.draw_initial(self.board, self.hands)
+            self.window.draw_prompt("Game over.  Press q to quit.")
+            util.wait_for_key()

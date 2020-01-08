@@ -1,17 +1,16 @@
-#Protip: Don't name your variables board
 import board as b
 import board
 import random
 import copy
 
-#This is a copy of the logic that updates minimum distances for each player to each city. It is used to evaluate moves without needing to copy the state.
-from minDifferenceAI import eval_move
+#Another simple AI. Minimize my cost - opponent cost. Currently only works single player, but that's okay.
+from util import eval_move
 
-#Obvious FOO strategy AI. Simply place whatever track reduces the cost to all of your cities the most
 def init(board,features,me,hands):
-    return minTotalAI(board,features,me,hands)
+    return minDifferenceAI(board,features,me,hands)
 
-class minTotalAI:
+class minDifferenceAI:
+    
     def __init__(self,board,features,me,hands):
         self.name=me
         self.features=features
@@ -21,7 +20,7 @@ class minTotalAI:
         self.hub=None
         self.board=board
 
-        #Need to compute initial totals for each possible hub placement.
+        #Compute my cost - opponent cost for hub placements
         for city in self.hands[self.name].values():
             self.cities.append(city)
         self.costs=copy.deepcopy(b.costs[self.cities[0][0]][self.cities[0][1]])
@@ -29,10 +28,16 @@ class minTotalAI:
             for i in range(0,self.board.size()[0]):
                 for j in range(0,self.board.size()[1]):
                     self.costs[i][j]+=b.costs[city[0]][city[1]][i][j]
+        for player in self.hands.keys():
+            if(player!=self.name):
+                for city in self.hands[player].values():
+                    for i in range(0,self.board.size()[0]):
+                        for j in range(0,self.board.size()[1]):
+                            self.costs[i][j]-=b.costs[city[0]][city[1]][i][j]
 
     #Move function
     def move(self,board):
-        #Place the hub first
+        #Place hub
         if(self.hub==None):
             minspot=None
             mincost=None
@@ -46,21 +51,24 @@ class minTotalAI:
                         mincost=self.costs[i][j]
             self.hub=minspot
             return minspot
-
-        #After, look at all the possible moves, and compute their impact on the total by aggregating eval_move (which doesn't modify state). Return the best one.
+        #Get moves, then eval them to see if they improve the differential. Choose move with best differential.
         possibleMoves=list(board.get_moves(self.hub))
         values=[]
         for move in possibleMoves:
-            state=[]
+            state=0
             tempdistances=copy.deepcopy(board.distances_left)
             tempdistances=eval_move(board.turn,move,board,tempdistances)
             for i in range(0,len(self.cities)):
-                total=tempdistances[self.name][self.cities[i]]
-                state.append(total)
+                state+=tempdistances[self.name][self.cities[i]]
+            for player in self.hands.keys():
+                if(player!=self.name):
+                    for city in self.hands[player].values():
+                        state=state-tempdistances[player][city]
             values.append(state)
         bestMove=0
         for i in range(0,len(possibleMoves)):
-            if(sum(values[i])<sum(values[bestMove])):
+            if(values[i]<values[bestMove]):
                 bestMove=i
         return possibleMoves[bestMove]
+
 
